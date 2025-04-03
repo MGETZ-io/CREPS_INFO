@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertretungsplan Info-Display</title>
+    <style>
+        /* style.css */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        #main-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        #vertretungsplan {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            height: 400px; /* Platz für den Vertretungsplan */
+            overflow-y: auto;
+        }
+
+        #anwesenheit {
+            margin-top: 30px;
+        }
+
+        #nummer-input {
+            padding: 10px;
+            width: 200px;
+            font-size: 16px;
+        }
+
+        #check-button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #check-button:hover {
+            background-color: #2980b9;
+        }
+
+        #anwesenheit-status {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="main-container">
+        <h1>Vertretungsplan</h1>
+
+        <!-- Bereich für den Vertretungsplan -->
+        <div id="vertretungsplan">
+            <!-- Vertretungsplan wird hier geladen -->
+        </div>
+
+        <!-- Bereich für Anwesenheit -->
+        <div id="anwesenheit">
+            <h2>Prüfung der Anwesenheit</h2>
+            <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein">
+            <button id="check-button">Checken</button>
+            <p id="anwesenheit-status">Anwesenheit: Unbestätigt</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Beispielhafte Schülernummern und Anwesenheitsdaten
+        const studentenDaten = {
+            "123456": "Max Mustermann",
+            "654321": "Erika Musterfrau",
+            // Weitere Nummern und Namen können hier hinzugefügt werden
+        };
+
+        // Funktion zum Laden des Vertretungsplans
+        function ladeVertretungsplan() {
+            const vertretungsplanContainer = document.getElementById("vertretungsplan");
+
+            // Hier wird der Vertretungsplan von der WebUntis API geladen
+            fetch("https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen")
+                .then(response => response.text())
+                .then(data => {
+                    vertretungsplanContainer.innerHTML = data;  // Hier wird der Vertretungsplan angezeigt
+                })
+                .catch(error => {
+                    console.error("Fehler beim Laden des Vertretungsplans:", error);
+                    vertretungsplanContainer.innerHTML = "<p>Fehler beim Laden des Vertretungsplans.</p>";
+                });
+        }
+
+        // Funktion zur Überprüfung der Anwesenheit
+        function checkAnwesenheit() {
+            const nummer = document.getElementById("nummer-input").value;
+            const statusText = document.getElementById("anwesenheit-status");
+
+            if (studentenDaten[nummer]) {
+                statusText.textContent = `Anwesenheit von ${studentenDaten[nummer]}: Bestätigt`;
+            } else {
+                statusText.textContent = "Anwesenheit: Unbekannte Nummer!";
+            }
+        }
+
+        // Event Listener für den Button
+        document.getElementById("check-button").addEventListener("click", checkAnwesenheit);
+
+        // Alle 45 Sekunden den Vertretungsplan neu laden
+        setInterval(ladeVertretungsplan, 45000);
+
+        // Vertretungsplan beim ersten Laden anzeigen
+        ladeVertretungsplan();
+    </script>
+</body>
+</html>
