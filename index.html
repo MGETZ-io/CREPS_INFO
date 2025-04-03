@@ -22,7 +22,6 @@
             height: 100vh;
             margin: 0;
             padding: 0;
-            zoom: 0.6; /* Zoom auf 60% */
         }
 
         #main-container {
@@ -70,8 +69,9 @@
             align-items: center;
             overflow: hidden;
             position: relative;
-            margin-top: 80px; /* Vergrößerter Abstand, um Platz für den Statusbalken zu schaffen */
-            width: 70%; /* Der Vertretungsplan nimmt 70% der Bildschirmbreite ein */
+            margin-top: 80px; /* Abstand, um Platz für den Statusbalken zu schaffen */
+            width: 100%; /* Der Vertretungsplan Container nimmt jetzt 100% der Breite ein */
+            max-width: 80vw; /* Der Vertretungsplan kann maximal 80% der Bildschirmbreite einnehmen */
         }
 
         iframe {
