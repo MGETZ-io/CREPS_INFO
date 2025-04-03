@@ -5,43 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vertretungsplan Info-Display</title>
     <style>
-        /* style.css */
+        /* Gesamtes Layout */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
             background-color: #f4f4f4;
-            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
         }
 
         #main-container {
-            max-width: 800px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 1000px;
             background-color: white;
-            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
-        h1, h2 {
+        h1 {
             color: #2c3e50;
+            text-align: center;
+            padding: 20px;
         }
 
-        #vertretungsplan {
-            margin-top: 20px;
+        /* Statusbalken oben */
+        #status-bar {
+            background-color: #3498db;
+            color: white;
+            width: 100%;
             padding: 10px;
-            background-color: #ecf0f1;
-            border-radius: 8px;
-            height: 400px; /* Platz für den Vertretungsplan */
-            overflow-y: auto;
+            text-align: center;
+            font-size: 16px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
         }
 
+        /* Bereich für den Vertretungsplan als Iframe */
+        #vertretungsplan-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            margin-top: 50px; /* Platz für den Statusbalken */
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Bereich für Anwesenheit */
         #anwesenheit {
-            margin-top: 30px;
+            background-color: #ecf0f1;
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            width: 100%;
         }
 
-        #nummer-input {
+        #anwesenheit input {
             padding: 10px;
-            width: 200px;
+            width: 250px;
             font-size: 16px;
         }
 
@@ -58,76 +104,67 @@
             background-color: #2980b9;
         }
 
-        #anwesenheit-status {
-            margin-top: 15px;
-            font-size: 18px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
     <div id="main-container">
         <h1>Vertretungsplan</h1>
 
-        <!-- Bereich für den Vertretungsplan -->
-        <div id="vertretungsplan">
-            <!-- Vertretungsplan wird hier geladen -->
+        <!-- Statusbalken für alle Nutzer -->
+        <div id="status-bar">
+            <!-- Anwesenheitsstatus wird hier angezeigt -->
+        </div>
+
+        <!-- Bereich für den Vertretungsplan als Iframe -->
+        <div id="vertretungsplan-container">
+            <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
         </div>
 
         <!-- Bereich für Anwesenheit -->
         <div id="anwesenheit">
             <h2>Prüfung der Anwesenheit</h2>
             <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein">
-            <button id="check-button">Checken</button>
-            <p id="anwesenheit-status">Anwesenheit: Unbestätigt</p>
         </div>
-
     </div>
 
     <script>
         // Beispielhafte Schülernummern und Anwesenheitsdaten
         const studentenDaten = {
-            "123456": "Max Mustermann",
-            "654321": "Erika Musterfrau",
-            // Weitere Nummern und Namen können hier hinzugefügt werden
+            "123456": { name: "Max Mustermann", status: "Abwesend" },
+            "654321": { name: "Erika Musterfrau", status: "Abwesend" },
+            "111222": { name: "John Doe", status: "Abwesend" },
+            "333444": { name: "Jane Smith", status: "Abwesend" }
         };
 
-        // Funktion zum Laden des Vertretungsplans
-        function ladeVertretungsplan() {
-            const vertretungsplanContainer = document.getElementById("vertretungsplan");
+        // Funktion zum Aktualisieren des Statusbalkens
+        function updateStatusBar() {
+            const statusBar = document.getElementById("status-bar");
+            let statusText = '';
 
-            // Hier wird der Vertretungsplan von der WebUntis API geladen
-            fetch("https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen")
-                .then(response => response.text())
-                .then(data => {
-                    vertretungsplanContainer.innerHTML = data;  // Hier wird der Vertretungsplan angezeigt
-                })
-                .catch(error => {
-                    console.error("Fehler beim Laden des Vertretungsplans:", error);
-                    vertretungsplanContainer.innerHTML = "<p>Fehler beim Laden des Vertretungsplans.</p>";
-                });
+            // Alle Nutzer durchlaufen und den Anwesenheitsstatus anzeigen
+            for (let nummer in studentenDaten) {
+                const student = studentenDaten[nummer];
+                statusText += `${student.name}: ${student.status} | `;
+            }
+
+            statusBar.innerText = statusText.trim();
         }
 
         // Funktion zur Überprüfung der Anwesenheit
         function checkAnwesenheit() {
             const nummer = document.getElementById("nummer-input").value;
-            const statusText = document.getElementById("anwesenheit-status");
-
             if (studentenDaten[nummer]) {
-                statusText.textContent = `Anwesenheit von ${studentenDaten[nummer]}: Bestätigt`;
-            } else {
-                statusText.textContent = "Anwesenheit: Unbekannte Nummer!";
+                // Status des entsprechenden Nutzers auf "Anwesend" setzen
+                studentenDaten[nummer].status = "Anwesend";
+                updateStatusBar();
             }
         }
 
-        // Event Listener für den Button
-        document.getElementById("check-button").addEventListener("click", checkAnwesenheit);
+        // Event Listener für das Eingabefeld
+        document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
 
-        // Alle 45 Sekunden den Vertretungsplan neu laden
-        setInterval(ladeVertretungsplan, 45000);
-
-        // Vertretungsplan beim ersten Laden anzeigen
-        ladeVertretungsplan();
+        // Statusbalken initialisieren
+        updateStatusBar();
     </script>
 </body>
 </html>
