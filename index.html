@@ -25,21 +25,10 @@
         }
 
         #main-container {
-            width: 100%;
-            max-width: 1000px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
             display: flex;
-            flex-direction: column;
             height: 100%;
-        }
-
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            padding: 20px;
+            width: 100%;
+            justify-content: space-between;
         }
 
         /* Statusbalken oben */
@@ -61,17 +50,25 @@
             line-height: 1.5;
         }
 
-        /* Bereich für den Vertretungsplan als Iframe */
+        /* Bereich für Anwesenheit (linke Hälfte) */
+        #anwesenheit-container {
+            width: 50%;
+            background-color: #ecf0f1;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Bereich für den Vertretungsplan (rechte Hälfte) */
         #vertretungsplan-container {
-            flex: 1;
+            width: 50%;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            position: relative;
-            margin-top: 80px; /* Abstand, um Platz für den Statusbalken zu schaffen */
-            width: 100%; /* Der Vertretungsplan Container nimmt jetzt 100% der Breite ein */
-            max-width: 80vw; /* Der Vertretungsplan kann maximal 80% der Bildschirmbreite einnehmen */
+            height: 100%;
         }
 
         iframe {
@@ -80,13 +77,20 @@
             border: none;
         }
 
-        /* Bereich für Anwesenheit */
+        /* Anwesenheitsstatus */
         #anwesenheit {
-            background-color: #ecf0f1;
-            padding: 20px;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .anwesenheits-status {
+            margin: 10px 0;
             font-size: 18px;
-            width: 100%;
+        }
+
+        .anwesenheits-status span {
+            font-weight: bold;
         }
 
         #anwesenheit input {
@@ -111,23 +115,24 @@
     </style>
 </head>
 <body>
+    <div id="status-bar">
+        Anwesenheitsstatus und Vertretungsplan
+    </div>
+
     <div id="main-container">
-        <h1>Vertretungsplan</h1>
-
-        <!-- Statusbalken für alle Nutzer -->
-        <div id="status-bar">
-            <!-- Anwesenheitsstatus wird hier angezeigt -->
-        </div>
-
-        <!-- Bereich für den Vertretungsplan als Iframe -->
-        <div id="vertretungsplan-container">
-            <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
-        </div>
-
         <!-- Bereich für Anwesenheit -->
-        <div id="anwesenheit">
+        <div id="anwesenheit-container">
             <h2>Prüfung der Anwesenheit</h2>
             <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein">
+
+            <div id="anwesenheit">
+                <!-- Dynamisch eingefügte Anwesenheitsstatus -->
+            </div>
+        </div>
+
+        <!-- Bereich für den Vertretungsplan -->
+        <div id="vertretungsplan-container">
+            <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
         </div>
     </div>
 
@@ -161,6 +166,37 @@
                 // Status des entsprechenden Nutzers auf "Anwesend" setzen
                 studentenDaten[nummer].status = "Anwesend";
                 updateStatusBar();
+
+                // Anwesenheitsliste aktualisieren
+                updateAnwesenheitsListe();
+
+                // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
+                document.getElementById("nummer-input").value = '';
+                document.getElementById("nummer-input").focus();
+            }
+        }
+
+        // Funktion zum Aktualisieren der Anwesenheitsliste
+        function updateAnwesenheitsListe() {
+            const anwesenheitContainer = document.getElementById("anwesenheit");
+
+            // Anwesenheitsliste leeren
+            anwesenheitContainer.innerHTML = '';
+
+            // Alle Nutzer durchlaufen und Anwesenheitsstatus anzeigen
+            for (let nummer in studentenDaten) {
+                const student = studentenDaten[nummer];
+                const statusDiv = document.createElement("div");
+                statusDiv.classList.add("anwesenheits-status");
+
+                if (student.status === "Anwesend") {
+                    statusDiv.style.color = "green"; // Anwesenend wird grün angezeigt
+                } else {
+                    statusDiv.style.color = "red"; // Abwesend wird rot angezeigt
+                }
+
+                statusDiv.innerHTML = `<span>${student.name}:</span> ${student.status}`;
+                anwesenheitContainer.appendChild(statusDiv);
             }
         }
 
@@ -169,6 +205,12 @@
 
         // Statusbalken initialisieren
         updateStatusBar();
+
+        // Fokus auf das Eingabefeld setzen, wenn die Seite geladen wird
+        window.onload = function() {
+            document.getElementById("nummer-input").focus();
+            updateAnwesenheitsListe();
+        }
     </script>
 </body>
 </html>
