@@ -70,15 +70,15 @@
     </div>
 
     <script>
-        // Liste der Meme-Bilder (bitte passen Sie diese Liste an)
-        const memeDirectory = './memes/'; // Ordner mit den Bildern
-        const memeImages = [
-            'meme1.png',
-            'meme2.jpeg',
-            'meme3.png',
-            'meme4.jpeg',
-            // Weitere Bilder hier hinzufügen...
-        ];
+        // Die Anzahl der Meme-Bilder (in diesem Fall gehen wir davon aus, dass du 5 Bilder hast)
+        const totalMemes = 5; // Beispiel: Anzahl der Memes
+        const memeDirectory = './memes/'; // Verzeichnis mit den Bildern
+        const memeImages = [];
+
+        // Generiert die Liste der Meme-Bilder basierend auf der Anzahl der Memes
+        for (let i = 1; i <= totalMemes; i++) {
+            memeImages.push(`meme${i}.png`); // Hier wird angenommen, dass die Bilder in Form von meme1.png, meme2.png, etc. heißen
+        }
 
         let currentSlide = 0;
 
