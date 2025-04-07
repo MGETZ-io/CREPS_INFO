@@ -34,19 +34,19 @@
             left: 0;
             z-index: 1000;
             display: block;
-            overflow-x: auto;
-            white-space: nowrap;
+            overflow-x: hidden; /* Verhindert horizontales Scrollen */
+            white-space: nowrap; /* Verhindert Zeilenumbruch */
             font-weight: bold;
             line-height: 1.5;
-            animation: rotateStatusBar 10s linear infinite;
+            animation: rotateStatusBar 20s linear infinite; /* Langsame Rotation */
         }
 
         @keyframes rotateStatusBar {
             0% {
-                transform: translateX(100%);
+                transform: translateX(100%); /* Starten außerhalb des Bildschirms rechts */
             }
             100% {
-                transform: translateX(-100%);
+                transform: translateX(-100%); /* Enden außerhalb des Bildschirms links */
             }
         }
 
