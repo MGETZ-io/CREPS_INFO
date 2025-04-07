@@ -98,8 +98,7 @@
             margin-bottom: 15px;
             border: 1px solid #2980b9;
             background-color: transparent;
-            color: transparent;
-            caret-color: transparent;
+            color: #2c3e50;
             outline: none;
         }
 
@@ -151,12 +150,13 @@
 
     <script>
         const studentenDaten = {
-            "2202": { name: "Maxim Getz", status: "Abwesend" },
+            "123456": { name: "Max Mustermann", status: "Abwesend" },
             "654321": { name: "Erika Musterfrau", status: "Abwesend" },
             "111222": { name: "John Doe", status: "Abwesend" },
             "333444": { name: "Jane Smith", status: "Abwesend" }
         };
 
+        // Funktion zum Aktualisieren des Statusbalkens
         function updateStatusBar() {
             const statusBar = document.getElementById("status-bar");
             let statusText = '';
@@ -167,17 +167,26 @@
             statusBar.innerText = statusText.trim();
         }
 
+        // Funktion zur Überprüfung der Anwesenheit
         function checkAnwesenheit() {
             const nummer = document.getElementById("nummer-input").value;
-            if (studentenDaten[nummer]) {
+
+            // Wenn die Nummer 6 Zeichen hat und gültig ist
+            if (nummer.length === 6 && studentenDaten[nummer]) {
                 studentenDaten[nummer].status = "Anwesend";
                 updateStatusBar();
                 updateAnwesenheitsListe();
+
+                // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
                 document.getElementById("nummer-input").value = '';
                 document.getElementById("nummer-input").focus();
+            } else {
+                // Wenn die Nummer ungültig ist (nicht 6 Zeichen oder nicht in den Daten)
+                document.getElementById("nummer-input").value = ''; // Eingabefeld leeren
             }
         }
 
+        // Funktion zum Aktualisieren der Anwesenheitsliste
         function updateAnwesenheitsListe() {
             const anwesenheitContainer = document.getElementById("anwesenheit");
             anwesenheitContainer.innerHTML = '';
@@ -192,6 +201,7 @@
             }
         }
 
+        // Funktion zum Festlegen des zufälligen Memes für den Tag
         function setMemeOfTheDay() {
             const lastMemeTime = localStorage.getItem('lastMemeTime');
             const currentTime = new Date().getTime();
@@ -207,10 +217,13 @@
             document.getElementById("meme").src = `meme${memeNumber}.png`;
         }
 
+        // Event Listener für das Eingabefeld
         document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
 
+        // Statusbalken initialisieren
         updateStatusBar();
 
+        // Fokus auf das Eingabefeld setzen, wenn die Seite geladen wird
         window.onload = function () {
             document.getElementById("nummer-input").focus();
             updateAnwesenheitsListe();
