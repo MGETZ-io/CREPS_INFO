@@ -1,0 +1,32 @@
+<?php
+// Verzeichnis mit Memes
+$directory = './memes/';
+$images = [];
+
+// Scanne das Verzeichnis nach .png und .jpeg-Dateien
+foreach (scandir($directory) as $file) {
+    if (preg_match('/\.(png|jpeg)$/', $file)) {
+        $images[] = $file;
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meme Collage</title>
+    <style>
+        /* Hier kannst du das gleiche CSS verwenden */
+    </style>
+</head>
+<body>
+    <h1>Willkommen zur Meme Collage!</h1>
+    <div class="meme-gallery">
+        <?php foreach ($images as $image): ?>
+            <img src="<?= $directory . $image ?>" alt="Meme">
+        <?php endforeach; ?>
+    </div>
+</body>
+</html>
