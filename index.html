@@ -93,9 +93,14 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            overflow-y: auto;
+            overflow-y: hidden;
             height: 300px;
             scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
+        }
+
+        .anwesenheits-status {
+            margin: 10px 0;
+            font-size: 18px;
             animation: rotateAnwesenheitList 20s linear infinite;
         }
 
@@ -106,11 +111,6 @@
             100% {
                 transform: translateY(-100%); /* Enden außerhalb des Bildschirms oben */
             }
-        }
-
-        .anwesenheits-status {
-            margin: 10px 0;
-            font-size: 18px;
         }
 
         .anwesenheits-status span {
