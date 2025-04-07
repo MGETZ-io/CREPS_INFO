@@ -38,7 +38,11 @@
             white-space: nowrap; /* Verhindert Zeilenumbruch */
             font-weight: bold;
             line-height: 1.5;
-            animation: rotateStatusBar 20s linear infinite; /* Langsame Rotation */
+        }
+
+        #status-bar-content {
+            display: inline-block;
+            animation: rotateStatusBar 20s linear infinite; /* Langsame Rotation für die Namen */
         }
 
         @keyframes rotateStatusBar {
@@ -139,7 +143,9 @@
 </head>
 <body>
     <div id="status-bar">
-        Anwesenheitsstatus und Vertretungsplan
+        <div id="status-bar-content">
+            Anwesenheitsstatus und Vertretungsplan
+        </div>
     </div>
 
     <div id="main-container">
@@ -175,13 +181,13 @@
 
         // Funktion zum Aktualisieren des Statusbalkens
         function updateStatusBar() {
-            const statusBar = document.getElementById("status-bar");
+            const statusBarContent = document.getElementById("status-bar-content");
             let statusText = '';
             for (let nummer in studentenDaten) {
                 const student = studentenDaten[nummer];
                 statusText += `${student.name}: ${student.status} | `;
             }
-            statusBar.innerText = statusText.trim();
+            statusBarContent.innerText = statusText.trim();
         }
 
         // Funktion zur Überprüfung der Anwesenheit
