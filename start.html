@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weiterleitungstest</title>
+    <script>
+        // Funktion für die automatische Weiterleitung nach 2 Sekunden
+        function autoRedirect() {
+            setTimeout(function() {
+                window.location.href = "https://mgetz-io.github.io/CREPS_INFO/";
+            }, 2000); // 2 Sekunden warten
+        }
+
+        // Funktion für die manuelle Weiterleitung, wenn '1' gedrückt wird
+        function handleKeyPress(event) {
+            if (event.key === '1') {
+                window.location.href = "https://mgetz-io.github.io/CREPS_INFO/privat.html";
+            }
+        }
+
+        // Beim Laden der Seite die automatische Weiterleitung aktivieren
+        window.onload = function() {
+            autoRedirect();
+            document.addEventListener('keydown', handleKeyPress);
+        };
+    </script>
+</head>
+<body>
+    <h1>Drücke die Zahl "1" oder warte 2 Sekunden...</h1>
+    <p>Wenn du 2 Sekunden wartest, wirst du automatisch weitergeleitet.</p>
+</body>
+</html>
