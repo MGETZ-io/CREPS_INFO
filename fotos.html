@@ -1,32 +1,121 @@
-<?php
-// Verzeichnis mit Memes
-$directory = './memes/';
-$images = [];
-
-// Scanne das Verzeichnis nach .png und .jpeg-Dateien
-foreach (scandir($directory) as $file) {
-    if (preg_match('/\.(png|jpeg)$/', $file)) {
-        $images[] = $file;
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meme Collage</title>
+    <title>Meme Diashow</title>
     <style>
-        /* Hier kannst du das gleiche CSS verwenden */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            color: #333;
+            margin-top: 20px;
+        }
+        .slideshow-container {
+            position: relative;
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+        .slides {
+            display: flex;
+            transition: transform 1s ease;
+        }
+        .slide {
+            min-width: 100%;
+            box-sizing: border-box;
+        }
+        .slide img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .navigation-button {
+            position: absolute;
+            top: 50%;
+            z-index: 1000;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        .prev {
+            left: 0;
+            transform: translateY(-50%);
+        }
+        .next {
+            right: 0;
+            transform: translateY(-50%);
+        }
     </style>
 </head>
 <body>
-    <h1>Willkommen zur Meme Collage!</h1>
-    <div class="meme-gallery">
-        <?php foreach ($images as $image): ?>
-            <img src="<?= $directory . $image ?>" alt="Meme">
-        <?php endforeach; ?>
+
+    <h1>Willkommen zur Meme Diashow!</h1>
+    
+    <div class="slideshow-container">
+        <div class="slides" id="slideshow">
+            <!-- Meme-Bilder werden hier eingefügt -->
+        </div>
+        <button class="navigation-button prev" onclick="changeSlide(-1)">❮</button>
+        <button class="navigation-button next" onclick="changeSlide(1)">❯</button>
     </div>
+
+    <script>
+        // Liste der Meme-Bilder (bitte passen Sie diese Liste an)
+        const memeDirectory = './memes/'; // Ordner mit den Bildern
+        const memeImages = [
+            'meme1.png',
+            'meme2.jpeg',
+            'meme3.png',
+            'meme4.jpeg',
+            // Weitere Bilder hier hinzufügen...
+        ];
+
+        let currentSlide = 0;
+
+        // Funktion, um die Diashow zu laden
+        function loadSlideshow() {
+            const slideshow = document.getElementById('slideshow');
+
+            memeImages.forEach(image => {
+                const slide = document.createElement('div');
+                slide.classList.add('slide');
+                slide.innerHTML = `<img src="${memeDirectory + image}" alt="Meme">`;
+                slideshow.appendChild(slide);
+            });
+
+            showSlide(currentSlide); // Zeigt das erste Bild
+        }
+
+        // Funktion, um das aktuelle Bild anzuzeigen
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            if (index >= slides.length) currentSlide = 0;
+            if (index < 0) currentSlide = slides.length - 1;
+            
+            // Positioniert die Slides horizontal
+            const slideWidth = slides[0].offsetWidth;
+            document.querySelector('.slides').style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+        }
+
+        // Funktion, um zwischen den Bildern zu wechseln
+        function changeSlide(n) {
+            currentSlide += n;
+            showSlide(currentSlide);
+        }
+
+        // Lädt die Diashow, wenn die Seite geladen wird
+        window.onload = loadSlideshow;
+    </script>
+
 </body>
 </html>
