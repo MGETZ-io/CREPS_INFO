@@ -133,7 +133,7 @@
         <!-- Bereich für Anwesenheit -->
         <div id="anwesenheit-container">
             <h2>Prüfung der Anwesenheit</h2>
-            <input type="text" id="nummer-input" placeholder=" " autocomplete="off">
+            <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein" autocomplete="off">
             <div id="anwesenheit">
                 <!-- Dynamisch eingefügte Anwesenheitsstatus -->
             </div>
@@ -171,18 +171,22 @@
         function checkAnwesenheit() {
             const nummer = document.getElementById("nummer-input").value;
 
-            // Wenn die Nummer 6 Zeichen hat und gültig ist
-            if (nummer.length === 6 && studentenDaten[nummer]) {
-                studentenDaten[nummer].status = "Anwesend";
-                updateStatusBar();
-                updateAnwesenheitsListe();
+            // Wenn die Nummer genau 6 Zeichen lang ist und gültig ist
+            if (nummer.length === 6) {
+                if (studentenDaten[nummer]) {
+                    // Status des entsprechenden Nutzers auf "Anwesend" setzen
+                    studentenDaten[nummer].status = "Anwesend";
+                    updateStatusBar();
+                    updateAnwesenheitsListe();
 
-                // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
-                document.getElementById("nummer-input").value = '';
-                document.getElementById("nummer-input").focus();
-            } else {
-                // Wenn die Nummer ungültig ist (nicht 6 Zeichen oder nicht in den Daten)
-                document.getElementById("nummer-input").value = ''; // Eingabefeld leeren
+                    // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
+                    document.getElementById("nummer-input").value = '';
+                    document.getElementById("nummer-input").focus();
+                } else {
+                    // Wenn die Nummer ungültig ist (nicht in den Daten)
+                    document.getElementById("nummer-input").value = ''; // Eingabefeld leeren
+                    document.getElementById("nummer-input").focus(); // Den Fokus zurücksetzen
+                }
             }
         }
 
