@@ -66,10 +66,11 @@
             width: 50%;
             background-color: #ecf0f1;
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: hidden;
             height: 100%;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         #vertretungsplan-container {
@@ -95,6 +96,16 @@
             overflow-y: auto;
             height: 300px;
             scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
+            animation: rotateAnwesenheitList 20s linear infinite;
+        }
+
+        @keyframes rotateAnwesenheitList {
+            0% {
+                transform: translateY(100%); /* Starten außerhalb des Bildschirms unten */
+            }
+            100% {
+                transform: translateY(-100%); /* Enden außerhalb des Bildschirms oben */
+            }
         }
 
         .anwesenheits-status {
@@ -263,4 +274,3 @@
     </script>
 </body>
 </html>
-
