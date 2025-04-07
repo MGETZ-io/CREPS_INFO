@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vertretungsplan Info-Display</title>
     <style>
+        /* Gesamtes Layout (Dark Mode) */
         * {
             margin: 0;
             padding: 0;
@@ -116,6 +117,7 @@
             background-color: #2980b9;
         }
 
+        /* Meme des Tages */
         #meme {
             position: absolute;
             bottom: 20px;
@@ -124,6 +126,7 @@
             height: auto;
         }
 
+        /* Splashscreen */
         #splashscreen {
             position: fixed;
             top: 0;
@@ -139,23 +142,16 @@
             z-index: 1001;
         }
 
-        #splashscreen img {
-            width: 200px;
-            margin-bottom: 20px;
-        }
-
-        #splashscreen div {
+        #splashscreen h1 {
             text-align: center;
         }
+
     </style>
 </head>
 <body>
-    <!-- Splashscreen mit Logo & Slogan -->
+    <!-- Splashscreen -->
     <div id="splashscreen">
-        <div>
-            <img src="logo.png" alt="Nebula Logo">
-            <div style="font-size: 20px;">Your.Privasi</div>
-        </div>
+        <h1>Sponsored by Nebula Your.Privacy</h1>
     </div>
 
     <div id="status-bar">
@@ -163,16 +159,16 @@
     </div>
 
     <div id="main-container">
-        <!-- Anwesenheit -->
+        <!-- Bereich für Anwesenheit -->
         <div id="anwesenheit-container">
             <h2>Prüfung der Anwesenheit</h2>
             <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein">
             <div id="anwesenheit">
-                <!-- Dynamisch eingefügt -->
+                <!-- Dynamisch eingefügte Anwesenheitsstatus -->
             </div>
         </div>
 
-        <!-- Vertretungsplan -->
+        <!-- Bereich für den Vertretungsplan -->
         <div id="vertretungsplan-container">
             <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
         </div>
@@ -182,6 +178,7 @@
     <img src="" id="meme" alt="Meme des Tages">
 
     <script>
+        // Beispielhafte Schülernummern und Anwesenheitsdaten
         const studentenDaten = {
             "123456": { name: "Max Mustermann", status: "Abwesend" },
             "654321": { name: "Erika Musterfrau", status: "Abwesend" },
@@ -189,64 +186,100 @@
             "333444": { name: "Jane Smith", status: "Abwesend" }
         };
 
+        // Funktion zum Aktualisieren des Statusbalkens
         function updateStatusBar() {
             const statusBar = document.getElementById("status-bar");
             let statusText = '';
+
+            // Alle Nutzer durchlaufen und den Anwesenheitsstatus anzeigen
             for (let nummer in studentenDaten) {
                 const student = studentenDaten[nummer];
                 statusText += `${student.name}: ${student.status} | `;
             }
+
             statusBar.innerText = statusText.trim();
         }
 
+        // Funktion zur Überprüfung der Anwesenheit
         function checkAnwesenheit() {
             const nummer = document.getElementById("nummer-input").value;
             if (studentenDaten[nummer]) {
+                // Status des entsprechenden Nutzers auf "Anwesend" setzen
                 studentenDaten[nummer].status = "Anwesend";
                 updateStatusBar();
+
+                // Anwesenheitsliste aktualisieren
                 updateAnwesenheitsListe();
+
+                // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
                 document.getElementById("nummer-input").value = '';
                 document.getElementById("nummer-input").focus();
             }
         }
 
+        // Funktion zum Aktualisieren der Anwesenheitsliste
         function updateAnwesenheitsListe() {
             const anwesenheitContainer = document.getElementById("anwesenheit");
+
+            // Anwesenheitsliste leeren
             anwesenheitContainer.innerHTML = '';
+
+            // Alle Nutzer durchlaufen und Anwesenheitsstatus anzeigen
             for (let nummer in studentenDaten) {
                 const student = studentenDaten[nummer];
                 const statusDiv = document.createElement("div");
                 statusDiv.classList.add("anwesenheits-status");
-                statusDiv.style.color = student.status === "Anwesend" ? "green" : "red";
+
+                if (student.status === "Anwesend") {
+                    statusDiv.style.color = "green"; // Anwesenend wird grün angezeigt
+                } else {
+                    statusDiv.style.color = "red"; // Abwesend wird rot angezeigt
+                }
+
                 statusDiv.innerHTML = `<span>${student.name}:</span> ${student.status}`;
                 anwesenheitContainer.appendChild(statusDiv);
             }
         }
 
+        // Funktion zum Festlegen des zufälligen Memes für den Tag
         function setMemeOfTheDay() {
             const lastMemeTime = localStorage.getItem('lastMemeTime');
             const currentTime = new Date().getTime();
-            const oneDay = 24 * 60 * 60 * 1000;
+            const oneDay = 24 * 60 * 60 * 1000; // Millisekunden in einem Tag
+
             let memeNumber = localStorage.getItem('memeNumber');
+
             if (!lastMemeTime || currentTime - lastMemeTime > oneDay) {
-                memeNumber = Math.floor(Math.random() * 100) + 1;
+                // Wenn mehr als 24 Stunden vergangen sind, wählen wir ein neues Meme
+                memeNumber = Math.floor(Math.random() * 100) + 1; // Zufallszahl von 1 bis 100
                 localStorage.setItem('memeNumber', memeNumber);
                 localStorage.setItem('lastMemeTime', currentTime);
             }
+
+            // Meme-Image setzen
             document.getElementById("meme").src = `meme${memeNumber}.png`;
         }
 
+        // Event Listener für das Eingabefeld
         document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
 
+        // Statusbalken initialisieren
         updateStatusBar();
 
-        window.onload = function () {
+        // Fokus auf das Eingabefeld setzen, wenn die Seite geladen wird
+        window.onload = function() {
             document.getElementById("nummer-input").focus();
             updateAnwesenheitsListe();
-            setTimeout(function () {
+
+            // Splashscreen entfernen nach 5 Sekunden
+            setTimeout(function() {
                 document.getElementById("splashscreen").style.display = "none";
             }, 5000);
+
+            // Alle 5 Minuten Anwesenheitsliste aktualisieren
             setInterval(updateAnwesenheitsListe, 300000);
+
+            // Setze Meme des Tages
             setMemeOfTheDay();
         }
     </script>
