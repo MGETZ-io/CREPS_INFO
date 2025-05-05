@@ -54,6 +54,16 @@
             }
         }
 
+        #clock {
+            font-size: 30px;
+            font-weight: bold;
+            color: #2980b9;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1001;
+        }
+
         #main-container {
             display: flex;
             height: 100%;
@@ -158,6 +168,9 @@
             Anwesenheitsstatus und Vertretungsplan
         </div>
     </div>
+
+    <!-- Uhr Anzeige -->
+    <div id="clock"></div>
 
     <div id="main-container">
         <!-- Bereich für Anwesenheit -->
@@ -269,6 +282,16 @@
             document.getElementById("meme").src = `meme${memeNumber}.png`;
         }
 
+        // Funktion um die Uhr anzuzeigen
+        function updateClock() {
+            const clockElement = document.getElementById("clock");
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            clockElement.innerText = `${hours}:${minutes}:${seconds}`;
+        }
+
         // Event Listener für das Eingabefeld
         document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
 
@@ -281,6 +304,7 @@
             updateAnwesenheitsListe();
             setInterval(updateAnwesenheitsListe, 300000);
             setMemeOfTheDay();
+            setInterval(updateClock, 1000);  // Die Uhr jede Sekunde aktualisieren
         };
     </script>
 </body>
