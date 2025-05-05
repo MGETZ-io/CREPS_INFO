@@ -178,6 +178,9 @@
     <!-- Meme des Tages -->
     <img src="" id="meme" alt="Meme des Tages">
 
+    <!-- Audio für die Klingel -->
+    <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
+
     <script>
         const studentenDaten = {
             "123456": { name: "Alyssa Summer Kalbau", status: "Abwesend" },
@@ -189,6 +192,13 @@
             "999000": { name: "Jannik Evolt", status: "Abwesend" },
             "220200": { name: "Maxim Getz", status: "Abwesend" }
         };
+
+        // Funktion zum Abspielen des Klingeltons
+        function playKlingelSound() {
+            const klingelAudio = document.getElementById("klingel-audio");
+            klingelAudio.volume = 1.0;  // Setzt die Lautstärke auf 100%
+            klingelAudio.play();
+        }
 
         // Funktion zum Aktualisieren des Statusbalkens
         function updateStatusBar() {
@@ -212,6 +222,7 @@
                     studentenDaten[nummer].status = "Anwesend";
                     updateStatusBar();
                     updateAnwesenheitsListe();
+                    playKlingelSound();  // Klingelton abspielen
 
                     // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
                     document.getElementById("nummer-input").value = '';
@@ -274,4 +285,3 @@
     </script>
 </body>
 </html>
-
