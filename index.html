@@ -83,12 +83,28 @@
             position: relative;
         }
 
+        #vertretungsplan-container {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100% - 20px);
+            background-color: #ecf0f1;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
         #anwesenheit {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            overflow-y: auto; /* Fixiert das Scrollen innerhalb des Containers */
-            max-height: 300px; /* Maximale Höhe des Anwesenheitsbereichs */
+            overflow-y: hidden;
+            height: 300px;
             scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
         }
 
@@ -268,4 +284,28 @@
 
         // Funktion um die Uhr anzuzeigen
         function updateClock() {
-           
+            const clockElement = document.getElementById("clock");
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            clockElement.innerText = `${hours}:${minutes}:${seconds}`;
+        }
+
+        // Event Listener für das Eingabefeld
+        document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
+
+        // Statusbalken initialisieren
+        updateStatusBar();
+
+        // Fokus auf das Eingabefeld setzen, wenn die Seite geladen wird
+        window.onload = function () {
+            document.getElementById("nummer-input").focus();
+            updateAnwesenheitsListe();
+            setInterval(updateAnwesenheitsListe, 300000);
+            setMemeOfTheDay();
+            setInterval(updateClock, 1000);  // Die Uhr jede Sekunde aktualisieren
+        };
+    </script>
+</body>
+</html>
