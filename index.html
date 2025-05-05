@@ -1,14 +1,271 @@
-    // Event Listener für das Eingabefeld
-    document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertretungsplan Info-Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    // Seite initialisieren
-    window.onload = function () {
-        document.getElementById("nummer-input").focus();
-        updateStatusBar();
-        updateAnwesenheitsListe();
-        setInterval(updateAnwesenheitsListe, 300000);
-        setMemeOfTheDay();
-        updateClock();
-        setInterval(updateClock, 1000);
-    };
-</script>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #status-bar {
+            background-color: #2980b9;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: block;
+            overflow-x: hidden; /* Verhindert horizontales Scrollen */
+            white-space: nowrap; /* Verhindert Zeilenumbruch */
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        #status-bar-content {
+            display: inline-block;
+            animation: rotateStatusBar 20s linear infinite; /* Langsame Rotation für die Namen */
+        }
+
+        @keyframes rotateStatusBar {
+            0% {
+                transform: translateX(100%); /* Starten außerhalb des Bildschirms rechts */
+            }
+            100% {
+                transform: translateX(-100%); /* Enden außerhalb des Bildschirms links */
+            }
+        }
+
+        #clock {
+            font-size: 30px;
+            font-weight: bold;
+            color: #2980b9;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1001;
+        }
+
+        #main-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+            justify-content: space-between;
+            margin-top: 70px;
+        }
+
+        #anwesenheit-container {
+            width: 50%;
+            background-color: #ecf0f1;
+            padding: 20px;
+            overflow-y: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #anwesenheit {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto; /* Fixiert das Scrollen innerhalb des Containers */
+            max-height: 300px; /* Maximale Höhe des Anwesenheitsbereichs */
+            scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
+        }
+
+        .anwesenheits-status {
+            margin: 10px 0;
+            font-size: 18px;
+            animation: rotateAnwesenheitList 20s linear infinite;
+        }
+
+        @keyframes rotateAnwesenheitList {
+            0% {
+                transform: translateY(100%); /* Starten außerhalb des Bildschirms unten */
+            }
+            100% {
+                transform: translateY(-100%); /* Enden außerhalb des Bildschirms oben */
+            }
+        }
+
+        .anwesenheits-status span {
+            font-weight: bold;
+        }
+
+        #anwesenheit input {
+            padding: 10px;
+            width: 250px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #2980b9;
+            background-color: transparent;
+            color: #2c3e50;
+            outline: none;
+        }
+
+        #check-button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #check-button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Meme des Tages */
+        #meme {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%; /* Meme nimmt die untere Hälfte ein */
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div id="status-bar">
+        <div id="status-bar-content">
+            Anwesenheitsstatus und Vertretungsplan
+        </div>
+    </div>
+
+    <!-- Uhr Anzeige -->
+    <div id="clock"></div>
+
+    <div id="main-container">
+        <!-- Bereich für Anwesenheit -->
+        <div id="anwesenheit-container">
+            <h2>Prüfung der Anwesenheit</h2>
+            <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein" autocomplete="off">
+            <div id="anwesenheit">
+                <!-- Dynamisch eingefügte Anwesenheitsstatus -->
+            </div>
+        </div>
+
+        <!-- Bereich für den Vertretungsplan -->
+        <div id="vertretungsplan-container">
+            <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
+        </div>
+    </div>
+
+    <!-- Meme des Tages -->
+    <img src="" id="meme" alt="Meme des Tages">
+
+    <!-- Audio für die Klingel -->
+    <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
+
+    <script>
+        const studentenDaten = {
+            "123456": { name: "Alyssa Summer Kalbau", status: "Abwesend" },
+            "654321": { name: "Etienne Schnack", status: "Abwesend" },
+            "696969": { name: "Lukas Brüggert", status: "Abwesend" },
+            "333444": { name: "Kevin Köhler", status: "Abwesend" },
+            "555666": { name: "Morice Classen", status: "Abwesend" },
+            "777888": { name: "Justin Kramer", status: "Abwesend" },
+            "999000": { name: "Jannik Evolt", status: "Abwesend" },
+            "220200": { name: "Maxim Getz", status: "Abwesend" }
+        };
+
+        // Funktion zum Abspielen des Klingeltons
+        function playKlingelSound() {
+            const klingelAudio = document.getElementById("klingel-audio");
+            klingelAudio.volume = 1.0;  // Setzt die Lautstärke auf 100%
+            klingelAudio.play();
+        }
+
+        // Funktion zum Aktualisieren des Statusbalkens
+        function updateStatusBar() {
+            const statusBarContent = document.getElementById("status-bar-content");
+            let statusText = '';
+            for (let nummer in studentenDaten) {
+                const student = studentenDaten[nummer];
+                statusText += `${student.name}: ${student.status} | `;
+            }
+            statusBarContent.innerText = statusText.trim();
+        }
+
+        // Funktion zur Überprüfung der Anwesenheit
+        function checkAnwesenheit() {
+            const nummer = document.getElementById("nummer-input").value;
+
+            // Wenn die Nummer genau 6 Zeichen lang ist und gültig ist
+            if (nummer.length === 6) {
+                if (studentenDaten[nummer]) {
+                    // Status des entsprechenden Nutzers auf "Anwesend" setzen
+                    studentenDaten[nummer].status = "Anwesend";
+                    updateStatusBar();
+                    updateAnwesenheitsListe();
+                    playKlingelSound();  // Klingelton abspielen
+
+                    // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
+                    document.getElementById("nummer-input").value = '';
+                    document.getElementById("nummer-input").focus();
+                } else {
+                    // Wenn die Nummer ungültig ist (nicht in den Daten)
+                    document.getElementById("nummer-input").value = ''; // Eingabefeld leeren
+                    document.getElementById("nummer-input").focus(); // Den Fokus zurücksetzen
+                }
+            }
+        }
+
+        // Funktion zum Aktualisieren der Anwesenheitsliste
+        function updateAnwesenheitsListe() {
+            const anwesenheitContainer = document.getElementById("anwesenheit");
+            anwesenheitContainer.innerHTML = '';
+            for (let nummer in studentenDaten) {
+                const student = studentenDaten[nummer];
+                const statusDiv = document.createElement("div");
+                statusDiv.classList.add("anwesenheits-status");
+
+                statusDiv.style.color = student.status === "Anwesend" ? "green" : "red";
+                statusDiv.innerHTML = `<span>${student.name}:</span> ${student.status}`;
+                anwesenheitContainer.appendChild(statusDiv);
+            }
+
+            // Scrollen zum letzten Eintrag
+            anwesenheitContainer.scrollTop = anwesenheitContainer.scrollHeight;
+        }
+
+        // Funktion zum Festlegen des zufälligen Memes für den Tag
+        function setMemeOfTheDay() {
+            const lastMemeTime = localStorage.getItem('lastMemeTime');
+            const currentTime = new Date().getTime();
+            const oneDay = 24 * 60 * 60 * 1000;
+            let memeNumber = localStorage.getItem('memeNumber');
+
+            if (!lastMemeTime || currentTime - lastMemeTime > oneDay) {
+                memeNumber = Math.floor(Math.random() * 100) + 1;
+                localStorage.setItem('memeNumber', memeNumber);
+                localStorage.setItem('lastMemeTime', currentTime);
+            }
+
+            document.getElementById("meme").src = `meme${memeNumber}.png`;
+        }
+
+        // Funktion um die Uhr anzuzeigen
+        function updateClock() {
+           
