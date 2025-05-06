@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redirect Seite</title>
     <style>
+        /* Stellt sicher, dass der gesamte Inhalt die Seite ausfüllt */
         body, html {
             height: 100%;
             margin: 0;
@@ -13,16 +14,23 @@
             align-items: center;
             background-color: #000;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
 
+        /* Container für die Animation */
         .animation-container {
             width: 100%;
             height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
             background: linear-gradient(45deg, #ff006e, #00c6ff, #3e6b8d);
             background-size: 200% 200%;
             animation: gradientAnimation 6s ease-in-out infinite;
         }
 
+        /* Animation für den Hintergrund */
         @keyframes gradientAnimation {
             0% {
                 background-position: 0% 50%;
@@ -35,7 +43,7 @@
             }
         }
 
-        /* Optional: Ein Ladepunkt, um die Animation zu verstärken */
+        /* Rotierende Ladeanimation */
         .loading-circle {
             width: 80px;
             height: 80px;
@@ -46,6 +54,7 @@
             position: absolute;
         }
 
+        /* Animation für die Drehung des Ladepunktes */
         @keyframes rotate {
             0% {
                 transform: rotate(0deg);
@@ -55,24 +64,36 @@
             }
         }
 
+        /* Text, der die Nachricht anzeigt */
         .message {
             position: absolute;
             bottom: 30px;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             text-align: center;
+            padding: 10px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-weight: bold;
         }
+
     </style>
 </head>
 <body>
 
     <div class="animation-container">
+        <!-- Ladeanimation -->
         <div class="loading-circle"></div>
-        <div class="message">Ihr AnWDashboard wurde aktualisiert. Für weitere Infos gehen Sie auf unseren Discord.</div>
+
+        <!-- Nachricht -->
+        <div class="message">
+            Ihr AnWDashboard wurde aktualisiert.<br>
+            Für weitere Infos gehen Sie auf unseren Discord.
+        </div>
     </div>
 
     <script>
-        // Funktion für das automatische Weiterleiten
+        // Funktion für das automatische Weiterleiten nach 6 Sekunden
         setTimeout(function() {
             window.location.href = "https://mgetz-io.github.io/CREPS_INFO/";
         }, 6000); // 6 Sekunden nach dem Start der Animation weiterleiten
