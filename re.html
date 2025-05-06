@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirect Seite</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        .animation-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #ff006e, #00c6ff, #3e6b8d);
+            background-size: 200% 200%;
+            animation: gradientAnimation 6s ease-in-out infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Optional: Ein Ladepunkt, um die Animation zu verstärken */
+        .loading-circle {
+            width: 80px;
+            height: 80px;
+            border: 8px solid transparent;
+            border-top: 8px solid #fff;
+            border-radius: 50%;
+            animation: rotate 2s linear infinite;
+            position: absolute;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .message {
+            position: absolute;
+            bottom: 30px;
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="animation-container">
+        <div class="loading-circle"></div>
+        <div class="message">Ihr AnWDashboard wurde aktualisiert. Für weitere Infos gehen Sie auf unseren Discord.</div>
+    </div>
+
+    <script>
+        // Funktion für das automatische Weiterleiten
+        setTimeout(function() {
+            window.location.href = "https://mgetz-io.github.io/CREPS_INFO/";
+        }, 6000); // 6 Sekunden nach dem Start der Animation weiterleiten
+    </script>
+
+</body>
+</html>
