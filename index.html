@@ -278,6 +278,12 @@
             const nummer = document.getElementById("nummer-input").value;
             const pin = document.getElementById("pin-input").value;
 
+            if (pin === "change") {
+                // Zeige Changelog-Popup
+                showPopup();
+                return;
+            }
+
             if (nummer.length === 6 && studentenDaten[nummer] && studentenDaten[nummer].pin === pin) {
                 studentenDaten[nummer].status = "Anwesend";
                 updateStatusBar();
