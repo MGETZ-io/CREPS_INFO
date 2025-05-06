@@ -34,34 +34,33 @@
             left: 0;
             z-index: 1000;
             display: block;
-            overflow-x: hidden; /* Verhindert horizontales Scrollen */
-            white-space: nowrap; /* Verhindert Zeilenumbruch */
+            overflow-x: hidden;
+            white-space: nowrap;
             font-weight: bold;
             line-height: 1.5;
         }
 
         #status-bar-content {
             display: inline-block;
-            animation: rotateStatusBar 20s linear infinite; /* Langsame Rotation für die Namen */
+            animation: rotateStatusBar 20s linear infinite;
         }
 
         @keyframes rotateStatusBar {
             0% {
-                transform: translateX(100%); /* Starten außerhalb des Bildschirms rechts */
+                transform: translateX(100%);
             }
             100% {
-                transform: translateX(-100%); /* Enden außerhalb des Bildschirms links */
+                transform: translateX(-100%);
             }
         }
 
         #clock {
             font-size: 30px;
             font-weight: bold;
-            color: #2980b9;
-            position: fixed;
-            top: 10px;
+            color: pink; /* Uhr in Pink */
+            position: absolute;
+            bottom: 10px;
             right: 10px;
-            z-index: 1001;
         }
 
         #main-container {
@@ -76,7 +75,7 @@
             width: 50%;
             background-color: #ecf0f1;
             padding: 20px;
-            overflow-y: hidden;
+            overflow-y: auto; /* Korrektes Scrollen */
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -103,24 +102,13 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            overflow-y: hidden;
-            height: 300px;
-            scroll-behavior: smooth; /* Sanftes Scrollen aktivieren */
+            overflow-y: auto; /* Korrektes Scrollen */
+            height: 100%; /* Scrollen bis zum Ende */
         }
 
         .anwesenheits-status {
             margin: 10px 0;
             font-size: 18px;
-            animation: rotateAnwesenheitList 20s linear infinite;
-        }
-
-        @keyframes rotateAnwesenheitList {
-            0% {
-                transform: translateY(100%); /* Starten außerhalb des Bildschirms unten */
-            }
-            100% {
-                transform: translateY(-100%); /* Enden außerhalb des Bildschirms oben */
-            }
         }
 
         .anwesenheits-status span {
@@ -151,15 +139,7 @@
             background-color: #2980b9;
         }
 
-        /* Meme des Tages */
-        #meme {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 50%; /* Meme nimmt die untere Hälfte ein */
-            object-fit: cover;
-        }
+        /* Meme des Tages entfernt */
     </style>
 </head>
 <body>
@@ -167,10 +147,8 @@
         <div id="status-bar-content">
             Anwesenheitsstatus und Vertretungsplan
         </div>
+        <div id="clock"></div> <!-- Uhr im Statusbalken -->
     </div>
-
-    <!-- Uhr Anzeige -->
-    <div id="clock"></div>
 
     <div id="main-container">
         <!-- Bereich für Anwesenheit -->
@@ -188,10 +166,6 @@
         </div>
     </div>
 
-    <!-- Meme des Tages -->
-    <img src="" id="meme" alt="Meme des Tages">
-
-    <!-- Audio für die Klingel -->
     <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
 
     <script>
@@ -206,14 +180,12 @@
             "220200": { name: "Maxim Getz", status: "Abwesend" }
         };
 
-        // Funktion zum Abspielen des Klingeltons
         function playKlingelSound() {
             const klingelAudio = document.getElementById("klingel-audio");
-            klingelAudio.volume = 1.0;  // Setzt die Lautstärke auf 100%
+            klingelAudio.volume = 1.0; 
             klingelAudio.play();
         }
 
-        // Funktion zum Aktualisieren des Statusbalkens
         function updateStatusBar() {
             const statusBarContent = document.getElementById("status-bar-content");
             let statusText = '';
@@ -224,31 +196,24 @@
             statusBarContent.innerText = statusText.trim();
         }
 
-        // Funktion zur Überprüfung der Anwesenheit
         function checkAnwesenheit() {
             const nummer = document.getElementById("nummer-input").value;
-
-            // Wenn die Nummer genau 6 Zeichen lang ist und gültig ist
             if (nummer.length === 6) {
                 if (studentenDaten[nummer]) {
-                    // Status des entsprechenden Nutzers auf "Anwesend" setzen
                     studentenDaten[nummer].status = "Anwesend";
                     updateStatusBar();
                     updateAnwesenheitsListe();
-                    playKlingelSound();  // Klingelton abspielen
+                    playKlingelSound(); 
 
-                    // Eingabefeld zurücksetzen und den Fokus erneut darauf setzen
                     document.getElementById("nummer-input").value = '';
                     document.getElementById("nummer-input").focus();
                 } else {
-                    // Wenn die Nummer ungültig ist (nicht in den Daten)
-                    document.getElementById("nummer-input").value = ''; // Eingabefeld leeren
-                    document.getElementById("nummer-input").focus(); // Den Fokus zurücksetzen
+                    document.getElementById("nummer-input").value = ''; 
+                    document.getElementById("nummer-input").focus(); 
                 }
             }
         }
 
-        // Funktion zum Aktualisieren der Anwesenheitsliste
         function updateAnwesenheitsListe() {
             const anwesenheitContainer = document.getElementById("anwesenheit");
             anwesenheitContainer.innerHTML = '';
@@ -266,23 +231,16 @@
             anwesenheitContainer.scrollTop = anwesenheitContainer.scrollHeight;
         }
 
-        // Funktion zum Festlegen des zufälligen Memes für den Tag
-        function setMemeOfTheDay() {
-            const lastMemeTime = localStorage.getItem('lastMemeTime');
-            const currentTime = new Date().getTime();
-            const oneDay = 24 * 60 * 60 * 1000;
-            let memeNumber = localStorage.getItem('memeNumber');
-
-            if (!lastMemeTime || currentTime - lastMemeTime > oneDay) {
-                memeNumber = Math.floor(Math.random() * 100) + 1;
-                localStorage.setItem('memeNumber', memeNumber);
-                localStorage.setItem('lastMemeTime', currentTime);
+        function setDailyReload() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            if (hours === 23 && minutes === 59 && seconds === 0) {
+                location.reload(); // Seite um 23:59 neuladen
             }
-
-            document.getElementById("meme").src = `meme${memeNumber}.png`;
         }
 
-        // Funktion um die Uhr anzuzeigen
         function updateClock() {
             const clockElement = document.getElementById("clock");
             const now = new Date();
@@ -292,19 +250,14 @@
             clockElement.innerText = `${hours}:${minutes}:${seconds}`;
         }
 
-        // Event Listener für das Eingabefeld
         document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
 
-        // Statusbalken initialisieren
-        updateStatusBar();
-
-        // Fokus auf das Eingabefeld setzen, wenn die Seite geladen wird
         window.onload = function () {
             document.getElementById("nummer-input").focus();
             updateAnwesenheitsListe();
             setInterval(updateAnwesenheitsListe, 300000);
-            setMemeOfTheDay();
-            setInterval(updateClock, 1000);  // Die Uhr jede Sekunde aktualisieren
+            setInterval(updateClock, 1000);
+            setInterval(setDailyReload, 1000); // Tägliches Neuladen um 23:59
         };
     </script>
 </body>
