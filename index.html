@@ -58,9 +58,10 @@
             font-size: 30px;
             font-weight: bold;
             color: pink;
-            position: absolute;
-            bottom: 10px;
+            position: fixed;
+            top: 40px;
             right: 10px;
+            z-index: 1001;
         }
 
         #main-container {
@@ -75,7 +76,7 @@
             width: 50%;
             background-color: #ecf0f1;
             padding: 20px;
-            overflow-y: auto;
+            overflow-y: hidden;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -104,11 +105,22 @@
             align-items: flex-start;
             overflow-y: auto;
             height: 100%;
+            scroll-behavior: smooth;
         }
 
         .anwesenheits-status {
             margin: 10px 0;
             font-size: 18px;
+            animation: rotateAnwesenheitList 20s linear infinite;
+        }
+
+        @keyframes rotateAnwesenheitList {
+            0% {
+                transform: translateY(100%);
+            }
+            100% {
+                transform: translateY(-100%);
+            }
         }
 
         .anwesenheits-status span {
@@ -139,33 +151,41 @@
             background-color: #2980b9;
         }
 
-        /* Pop-up Styles */
-        #popup {
-            display: none;
+        #meme {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            border: 2px solid #2980b9;
-            padding: 20px;
-            width: 300px;
-            z-index: 1100;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            object-fit: cover;
         }
 
+        /* Pop-up für Changelogs */
         #popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
             display: none;
+            z-index: 999;
         }
 
-        /* Meme des Tages entfernt */
+        #popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 2px solid #2980b9;
+            display: none;
+            z-index: 1000;
+            width: 300px;
+            text-align: center;
+        }
+
     </style>
 </head>
 <body>
@@ -173,80 +193,76 @@
         <div id="status-bar-content">
             Anwesenheitsstatus und Vertretungsplan
         </div>
-        <div id="clock"></div>
     </div>
 
+    <!-- Uhr Anzeige -->
+    <div id="clock"></div>
+
     <div id="main-container">
+        <!-- Bereich für Anwesenheit -->
         <div id="anwesenheit-container">
             <h2>Prüfung der Anwesenheit</h2>
             <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein" autocomplete="off">
-            <div id="anwesenheit"></div>
-            <br>
-            <!-- PIN-Eingabe -->
-            <input type="text" id="pin-input" placeholder="Gib PIN ein (z.B. 1234)">
-            <button id="check-pin-button">PIN eingeben</button>
+            <input type="password" id="pin-input" placeholder="Gib deinen PIN ein" autocomplete="off">
+            <button id="check-pin-button">Prüfen</button>
+            <div id="anwesenheit">
+                <!-- Dynamisch eingefügte Anwesenheitsstatus -->
+            </div>
         </div>
 
+        <!-- Bereich für den Vertretungsplan -->
         <div id="vertretungsplan-container">
             <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
         </div>
     </div>
 
-    <!-- Pop-up Overlay und Inhalt -->
+    <!-- Meme des Tages -->
+    <img src="" id="meme" alt="Meme des Tages">
+
+    <!-- Pop-up für Changelogs -->
     <div id="popup-overlay"></div>
     <div id="popup">
-        <h3>Changelogs</h3>
-        <p>Neues Feature hinzugefügt: Pop-up für Changelogs.</p>
-        <p>Fehlerbehebung: Korrektur des Anwesenheitslistenscrolling.</p>
-        <p>Verbesserungen: UI für Anwesenheit optimiert.</p>
+        <h3>Changelog:</h3>
+        <p>Neue Funktion: Anwesenheitsprüfung und automatische Aktualisierung der Statusanzeige.</p>
+        <p>Bugfix: Scroll-Problem in der Anwesenheitsliste behoben.</p>
     </div>
 
+    <!-- Audio für die Klingel -->
     <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
 
     <script>
         const studentenDaten = {
-            "123456": { name: "Alyssa Summer Kalbau", status: "Abwesend" },
-            "654321": { name: "Etienne Schnack", status: "Abwesend" },
-            "696969": { name: "Lukas Brüggert", status: "Abwesend" },
-            "333444": { name: "Kevin Köhler", status: "Abwesend" },
-            "555666": { name: "Morice Classen", status: "Abwesend" },
-            "777888": { name: "Justin Kramer", status: "Abwesend" },
-            "999000": { name: "Jannik Evolt", status: "Abwesend" },
-            "220200": { name: "Maxim Getz", status: "Abwesend" }
+            "123456": { name: "Alyssa Summer Kalbau", pin: "1234", status: "Abwesend" },
+            "654321": { name: "Etienne Schnack", pin: "4321", status: "Abwesend" },
+            "696969": { name: "Lukas Brüggert", pin: "6969", status: "Abwesend" },
+            "333444": { name: "Kevin Köhler", pin: "4444", status: "Abwesend" },
+            "555666": { name: "Morice Classen", pin: "5555", status: "Abwesend" },
+            "777888": { name: "Justin Kramer", pin: "8888", status: "Abwesend" },
+            "999000": { name: "Jannik Evolt", pin: "0000", status: "Abwesend" },
+            "220200": { name: "Maxim Getz", pin: "2202", status: "Abwesend" }
         };
 
-        // Pop-up anzeigen
-        function showPopup() {
-            const popup = document.getElementById("popup");
-            const overlay = document.getElementById("popup-overlay");
+        // Funktion zum Neuladen der Seite um 23:59
+        function reloadAtMidnight() {
+            const now = new Date();
+            const midnight = new Date(now);
+            midnight.setHours(23, 59, 59, 999);
 
-            popup.style.display = "block";
-            overlay.style.display = "block";
+            const timeUntilMidnight = midnight - now;
 
-            // Pop-up für 10 Sekunden anzeigen
-            setTimeout(() => {
-                popup.style.display = "none";
-                overlay.style.display = "none";
-            }, 10000);
+            setTimeout(function() {
+                location.reload();  // Seite neu laden
+            }, timeUntilMidnight);
         }
 
-        // PIN Überprüfung
-        document.getElementById("check-pin-button").addEventListener("click", function() {
-            const pinInput = document.getElementById("pin-input").value;
-
-            if (pinInput === "1234") { // Beispiel PIN
-                showPopup();
-            } else {
-                alert("Falscher PIN");
-            }
-        });
-
+        // Funktion zum Abspielen des Klingeltons
         function playKlingelSound() {
             const klingelAudio = document.getElementById("klingel-audio");
-            klingelAudio.volume = 1.0;
+            klingelAudio.volume = 1.0; 
             klingelAudio.play();
         }
 
+        // Funktion zum Aktualisieren des Statusbalkens
         function updateStatusBar() {
             const statusBarContent = document.getElementById("status-bar-content");
             let statusText = '';
@@ -257,23 +273,27 @@
             statusBarContent.innerText = statusText.trim();
         }
 
+        // Funktion zur Überprüfung der Anwesenheit
         function checkAnwesenheit() {
             const nummer = document.getElementById("nummer-input").value;
-            if (nummer.length === 6) {
-                if (studentenDaten[nummer]) {
-                    studentenDaten[nummer].status = "Anwesend";
-                    updateStatusBar();
-                    updateAnwesenheitsListe();
-                    playKlingelSound(); 
-                    document.getElementById("nummer-input").value = '';
-                    document.getElementById("nummer-input").focus();
-                } else {
-                    document.getElementById("nummer-input").value = ''; 
-                    document.getElementById("nummer-input").focus(); 
-                }
+            const pin = document.getElementById("pin-input").value;
+
+            if (nummer.length === 6 && studentenDaten[nummer] && studentenDaten[nummer].pin === pin) {
+                studentenDaten[nummer].status = "Anwesend";
+                updateStatusBar();
+                playKlingelSound();
+                updateAnwesenheitsListe();
+                document.getElementById("nummer-input").value = '';
+                document.getElementById("pin-input").value = '';
+                document.getElementById("nummer-input").focus();
+            } else {
+                document.getElementById("nummer-input").value = '';
+                document.getElementById("pin-input").value = '';
+                document.getElementById("nummer-input").focus();
             }
         }
 
+        // Funktion zum Aktualisieren der Anwesenheitsliste
         function updateAnwesenheitsListe() {
             const anwesenheitContainer = document.getElementById("anwesenheit");
             anwesenheitContainer.innerHTML = '';
@@ -281,7 +301,6 @@
                 const student = studentenDaten[nummer];
                 const statusDiv = document.createElement("div");
                 statusDiv.classList.add("anwesenheits-status");
-
                 statusDiv.style.color = student.status === "Anwesend" ? "green" : "red";
                 statusDiv.innerHTML = `<span>${student.name}:</span> ${student.status}`;
                 anwesenheitContainer.appendChild(statusDiv);
@@ -290,6 +309,7 @@
             anwesenheitContainer.scrollTop = anwesenheitContainer.scrollHeight;
         }
 
+        // Funktion um die Uhr anzuzeigen
         function updateClock() {
             const clockElement = document.getElementById("clock");
             const now = new Date();
@@ -299,13 +319,30 @@
             clockElement.innerText = `${hours}:${minutes}:${seconds}`;
         }
 
-        document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
+        // Pop-up für Changelogs anzeigen
+        function showPopup() {
+            const popup = document.getElementById("popup");
+            const overlay = document.getElementById("popup-overlay");
 
+            popup.style.display = "block";
+            overlay.style.display = "block";
+
+            setTimeout(() => {
+                popup.style.display = "none";
+                overlay.style.display = "none";
+            }, 10000);
+        }
+
+        // Event Listener für das Eingabefeld
+        document.getElementById("check-pin-button").addEventListener("click", checkAnwesenheit);
+
+        // Statusbalken initialisieren und Seite um 23:59 neuladen
         window.onload = function () {
-            document.getElementById("nummer-input").focus();
+            updateStatusBar();
             updateAnwesenheitsListe();
             setInterval(updateAnwesenheitsListe, 300000);
             setInterval(updateClock, 1000);
+            reloadAtMidnight();
         };
     </script>
 </body>
