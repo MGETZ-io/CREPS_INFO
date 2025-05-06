@@ -57,7 +57,7 @@
         #clock {
             font-size: 30px;
             font-weight: bold;
-            color: pink; /* Uhr in Pink */
+            color: pink;
             position: absolute;
             bottom: 10px;
             right: 10px;
@@ -75,7 +75,7 @@
             width: 50%;
             background-color: #ecf0f1;
             padding: 20px;
-            overflow-y: auto; /* Korrektes Scrollen */
+            overflow-y: auto;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -102,8 +102,8 @@
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            overflow-y: auto; /* Korrektes Scrollen */
-            height: 100%; /* Scrollen bis zum Ende */
+            overflow-y: auto;
+            height: 100%;
         }
 
         .anwesenheits-status {
@@ -139,6 +139,32 @@
             background-color: #2980b9;
         }
 
+        /* Pop-up Styles */
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 2px solid #2980b9;
+            padding: 20px;
+            width: 300px;
+            z-index: 1100;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
         /* Meme des Tages entfernt */
     </style>
 </head>
@@ -147,23 +173,32 @@
         <div id="status-bar-content">
             Anwesenheitsstatus und Vertretungsplan
         </div>
-        <div id="clock"></div> <!-- Uhr im Statusbalken -->
+        <div id="clock"></div>
     </div>
 
     <div id="main-container">
-        <!-- Bereich für Anwesenheit -->
         <div id="anwesenheit-container">
             <h2>Prüfung der Anwesenheit</h2>
             <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein" autocomplete="off">
-            <div id="anwesenheit">
-                <!-- Dynamisch eingefügte Anwesenheitsstatus -->
-            </div>
+            <div id="anwesenheit"></div>
+            <br>
+            <!-- PIN-Eingabe -->
+            <input type="text" id="pin-input" placeholder="Gib PIN ein (z.B. 1234)">
+            <button id="check-pin-button">PIN eingeben</button>
         </div>
 
-        <!-- Bereich für den Vertretungsplan -->
         <div id="vertretungsplan-container">
             <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
         </div>
+    </div>
+
+    <!-- Pop-up Overlay und Inhalt -->
+    <div id="popup-overlay"></div>
+    <div id="popup">
+        <h3>Changelogs</h3>
+        <p>Neues Feature hinzugefügt: Pop-up für Changelogs.</p>
+        <p>Fehlerbehebung: Korrektur des Anwesenheitslistenscrolling.</p>
+        <p>Verbesserungen: UI für Anwesenheit optimiert.</p>
     </div>
 
     <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
@@ -180,9 +215,35 @@
             "220200": { name: "Maxim Getz", status: "Abwesend" }
         };
 
+        // Pop-up anzeigen
+        function showPopup() {
+            const popup = document.getElementById("popup");
+            const overlay = document.getElementById("popup-overlay");
+
+            popup.style.display = "block";
+            overlay.style.display = "block";
+
+            // Pop-up für 10 Sekunden anzeigen
+            setTimeout(() => {
+                popup.style.display = "none";
+                overlay.style.display = "none";
+            }, 10000);
+        }
+
+        // PIN Überprüfung
+        document.getElementById("check-pin-button").addEventListener("click", function() {
+            const pinInput = document.getElementById("pin-input").value;
+
+            if (pinInput === "1234") { // Beispiel PIN
+                showPopup();
+            } else {
+                alert("Falscher PIN");
+            }
+        });
+
         function playKlingelSound() {
             const klingelAudio = document.getElementById("klingel-audio");
-            klingelAudio.volume = 1.0; 
+            klingelAudio.volume = 1.0;
             klingelAudio.play();
         }
 
@@ -204,7 +265,6 @@
                     updateStatusBar();
                     updateAnwesenheitsListe();
                     playKlingelSound(); 
-
                     document.getElementById("nummer-input").value = '';
                     document.getElementById("nummer-input").focus();
                 } else {
@@ -227,18 +287,7 @@
                 anwesenheitContainer.appendChild(statusDiv);
             }
 
-            // Scrollen zum letzten Eintrag
             anwesenheitContainer.scrollTop = anwesenheitContainer.scrollHeight;
-        }
-
-        function setDailyReload() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            if (hours === 23 && minutes === 59 && seconds === 0) {
-                location.reload(); // Seite um 23:59 neuladen
-            }
         }
 
         function updateClock() {
@@ -257,7 +306,6 @@
             updateAnwesenheitsListe();
             setInterval(updateAnwesenheitsListe, 300000);
             setInterval(updateClock, 1000);
-            setInterval(setDailyReload, 1000); // Tägliches Neuladen um 23:59
         };
     </script>
 </body>
