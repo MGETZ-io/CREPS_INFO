@@ -154,7 +154,7 @@
         <!-- Bereich für Anwesenheit -->
         <div id="anwesenheit-container">
             <h2>Prüfung der Anwesenheit</h2>
-            <input type="text" id="nummer-input" placeholder="Gib deine 6-stellige Nummer ein" autocomplete="off">
+            <input type="text" id="nummer-input" placeholder="Gib deine 10-stellige Nummer ein" autocomplete="off">
             <div id="anwesenheit">
                 <!-- Dynamisch eingefügte Anwesenheitsstatus -->
             </div>
@@ -180,7 +180,7 @@
             "120000": { name: "Paddy Kuhls", status: "Abwesend" },
             "abcabc": { name: "Comrad Bruno", status: "Anwesend" },
             "911911": { name: "Damian Garmatz", status: "Abwesend" },
-            "220200": { name: "Maxim Getz", status: "Abwesend" }
+            "0002261402": { name: "Maxim Getz", status: "Abwesend" }  // Geändert zu 0002261402
         };
 
         function playKlingelSound() {
@@ -201,7 +201,7 @@
 
         function checkAnwesenheit() {
             const nummer = document.getElementById("nummer-input").value;
-            if (nummer.length === 6) {
+            if (nummer.length === 10) {  // Überprüft nun auf 10 Zeichen
                 if (studentenDaten[nummer]) {
                     studentenDaten[nummer].status = "Anwesend";
                     updateStatusBar();
