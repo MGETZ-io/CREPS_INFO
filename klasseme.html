@@ -6,25 +6,50 @@
   <title>Anwesenheit - Klasse</title>
   <style>
     body { font-family: sans-serif; text-align: center; background: #f0f0f0; margin: 0; padding: 2rem; }
-    #codeDisplay { font-size: 2rem; padding: 1rem; margin: 1rem auto; background: white; border: 2px solid #333; width: 300px; }
+    #codeDisplay { font-size: 2rem; padding: 1rem; margin: 1rem auto; background: white; border: 2px solid #333; width: 300px; letter-spacing: 0.3rem; }
     .keypad { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
     .btn { font-size: 2rem; padding: 20px; background: #333; color: white; border: none; border-radius: 10px; }
     .btn:active { background: #111; }
-    #message { font-size: 1.3rem; margin-top: 1rem; min-height: 2rem; }
+    #hiddenInput { position: absolute; opacity: 0; pointer-events: none; }
+
+    /* Popup styles */
+    #popup {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      z-index: 100;
+      display: none;
+      font-size: 1.5rem;
+    }
+    #overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 99;
+    }
   </style>
 </head>
-<body>
+<body onclick="document.getElementById('hiddenInput').focus()">
   <h1>Anwesenheits-Check-in</h1>
   <div id="codeDisplay">__________</div>
+  <input id="hiddenInput" inputmode="numeric" />
   <div class="keypad" id="keypad"></div>
-  <div id="message"></div>
+
+  <!-- Popup -->
+  <div id="overlay"></div>
+  <div id="popup"></div>
 
   <script>
     const validCodes = {
       "1234567890": "Maxim Getz",
       "0987654321": "Lena Scholz",
       "1111222233": "Tom Müller"
-      // Weitere Schüler:innen hinzufügen
+      // Weitere Codes hier
     };
 
     let input = "";
@@ -48,26 +73,30 @@
       const now = new Date();
       if (name) {
         const time = now.toLocaleTimeString("de-DE");
-        document.getElementById("message").textContent = `✅ Willkommen, ${name} – eingeloggt um ${time}`;
         saveLogin(name, now.toISOString());
-
-        setTimeout(() => {
-          input = "";
-          updateDisplay();
-          document.getElementById("message").textContent = "";
-        }, 4000);
+        showPopup(`✅ Willkommen, ${name}<br>eingeloggt um ${time}`);
       } else {
-        document.getElementById("message").textContent = "❌ Ungültiger Code";
-        setTimeout(() => {
-          input = "";
-          updateDisplay();
-          document.getElementById("message").textContent = "";
-        }, 2000);
+        showPopup("❌ Ungültiger Code");
       }
     }
 
+    function showPopup(message) {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      popup.innerHTML = message;
+      popup.style.display = "block";
+      overlay.style.display = "block";
+
+      setTimeout(() => {
+        popup.style.display = "none";
+        overlay.style.display = "none";
+        input = "";
+        updateDisplay();
+      }, 3500);
+    }
+
     function saveLogin(name, isoTime) {
-      const dateKey = isoTime.split("T")[0]; // z.B. 2025-05-18
+      const dateKey = isoTime.split("T")[0];
       const logs = JSON.parse(localStorage.getItem("loginsByDay") || "{}");
       const time = new Date(isoTime).toLocaleTimeString("de-DE");
 
@@ -96,8 +125,20 @@
       keypad.appendChild(document.createElement("div"));
     }
 
+    // Tastatureingabe
+    document.addEventListener("keydown", (e) => {
+      if (e.key >= "0" && e.key <= "9") {
+        handleKey(e.key);
+      }
+      if (e.key === "Backspace") {
+        input = input.slice(0, -1);
+        updateDisplay();
+      }
+    });
+
     createKeypad();
     updateDisplay();
+    document.getElementById("hiddenInput").focus();
   </script>
 </body>
 </html>
