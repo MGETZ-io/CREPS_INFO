@@ -5,32 +5,112 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Anwesenheit - Klasse</title>
   <style>
-    body { font-family: sans-serif; text-align: center; background: #f0f0f0; margin: 0; padding: 2rem; }
-    #codeDisplay { font-size: 2rem; padding: 1rem; margin: 1rem auto; background: white; border: 2px solid #333; width: 300px; letter-spacing: 0.3rem; }
-    .keypad { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
-    .btn { font-size: 2rem; padding: 20px; background: #333; color: white; border: none; border-radius: 10px; }
-    .btn:active { background: #111; }
-    #hiddenInput { position: absolute; opacity: 0; pointer-events: none; }
-
-    /* Popup styles */
-    #popup {
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      margin: 0;
       padding: 2rem;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-      z-index: 100;
-      display: none;
-      font-size: 1.5rem;
     }
+
+    #codeDisplay {
+      font-size: 2rem;
+      padding: 1rem;
+      margin: 1rem auto;
+      background: white;
+      border: 2px solid #333;
+      width: 300px;
+      letter-spacing: 0.3rem;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .btn {
+      font-size: 2rem;
+      padding: 20px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 10px;
+    }
+
+    .btn:active {
+      background: #111;
+    }
+
+    #hiddenInput {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Popup & Apple Pay Style */
     #overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.5);
       display: none;
       z-index: 99;
+    }
+
+    #popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.4);
+      z-index: 100;
+      display: none;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .checkmark {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 5px solid #34c759;
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .checkmark::after {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 10px;
+      width: 20px;
+      height: 40px;
+      border-right: 5px solid #34c759;
+      border-bottom: 5px solid #34c759;
+      transform: rotate(45deg);
+      animation: checkmark 0.4s ease-out forwards;
+    }
+
+    @keyframes checkmark {
+      from {
+        opacity: 0;
+        transform: scale(0.5) rotate(45deg);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) rotate(45deg);
+      }
+    }
+
+    .error {
+      font-size: 1.3rem;
+      color: red;
     }
   </style>
 </head>
@@ -40,7 +120,6 @@
   <input id="hiddenInput" inputmode="numeric" />
   <div class="keypad" id="keypad"></div>
 
-  <!-- Popup -->
   <div id="overlay"></div>
   <div id="popup"></div>
 
@@ -49,7 +128,7 @@
       "1234567890": "Maxim Getz",
       "0987654321": "Lena Scholz",
       "1111222233": "Tom Müller"
-      // Weitere Codes hier
+      // Weitere Codes hier hinzufügen
     };
 
     let input = "";
@@ -74,16 +153,20 @@
       if (name) {
         const time = now.toLocaleTimeString("de-DE");
         saveLogin(name, now.toISOString());
-        showPopup(`✅ Willkommen, ${name}<br>eingeloggt um ${time}`);
+        showSuccessPopup(name, time);
       } else {
-        showPopup("❌ Ungültiger Code");
+        showErrorPopup("❌ Ungültiger Code");
       }
     }
 
-    function showPopup(message) {
+    function showSuccessPopup(name, time) {
       const popup = document.getElementById("popup");
       const overlay = document.getElementById("overlay");
-      popup.innerHTML = message;
+      popup.innerHTML = `
+        <div class="checkmark"></div>
+        ✅ Willkommen, <strong>${name}</strong><br>
+        Eingeloggt um <strong>${time}</strong>
+      `;
       popup.style.display = "block";
       overlay.style.display = "block";
 
@@ -92,7 +175,22 @@
         overlay.style.display = "none";
         input = "";
         updateDisplay();
-      }, 3500);
+      }, 4000);
+    }
+
+    function showErrorPopup(msg) {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      popup.innerHTML = `<div class="error">${msg}</div>`;
+      popup.style.display = "block";
+      overlay.style.display = "block";
+
+      setTimeout(() => {
+        popup.style.display = "none";
+        overlay.style.display = "none";
+        input = "";
+        updateDisplay();
+      }, 2500);
     }
 
     function saveLogin(name, isoTime) {
@@ -125,7 +223,6 @@
       keypad.appendChild(document.createElement("div"));
     }
 
-    // Tastatureingabe
     document.addEventListener("keydown", (e) => {
       if (e.key >= "0" && e.key <= "9") {
         handleKey(e.key);
