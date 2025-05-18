@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anwesenheit – Adminansicht</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; background: #fff; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #999; padding: 8px; text-align: left; }
+    select, button { font-size: 1rem; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>📋 Anwesenheitsprotokoll</h1>
+  <label for="daySelect">Datum auswählen:</label>
+  <select id="daySelect"></select>
+  <button onclick="exportCSV()">⬇️ CSV Exportieren</button>
+  <table id="logTable">
+    <thead>
+      <tr><th>Name</th><th>Uhrzeit</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const logs = JSON.parse(localStorage.getItem("loginsByDay") || "{}");
+    const daySelect = document.getElementById("daySelect");
+    const tbody = document.querySelector("#logTable tbody");
+
+    function populateDates() {
+      Object.keys(logs).sort().forEach(date => {
+        const option = document.createElement("option");
+        option.value = date;
+        option.textContent = date;
+        daySelect.appendChild(option);
+      });
+      if (daySelect.options.length) {
+        daySelect.selectedIndex = daySelect.options.length - 1;
+        showLogsFor(daySelect.value);
+      }
+    }
+
+    function showLogsFor(date) {
+      tbody.innerHTML = "";
+      (logs[date] || []).forEach(entry => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${entry.name}</td><td>${entry.time}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportCSV() {
+      const date = daySelect.value;
+      const entries = logs[date] || [];
+      let csv = "Name,Uhrzeit\n";
+      entries.forEach(entry => {
+        csv += `${entry.name},${entry.time}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `anwesenheit_${date}.csv`;
+      link.click();
+    }
+
+    daySelect.addEventListener("change", () => showLogsFor(daySelect.value));
+    populateDates();
+  </script>
+</body>
+</html>
