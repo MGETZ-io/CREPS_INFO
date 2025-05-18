@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Anwesenheit - Klasse</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; background: #f0f0f0; margin: 0; padding: 2rem; }
+    #codeDisplay { font-size: 2rem; padding: 1rem; margin: 1rem auto; background: white; border: 2px solid #333; width: 300px; }
+    .keypad { display: grid; grid-template-columns: repeat(3, 100px); gap: 10px; justify-content: center; margin-top: 20px; }
+    .btn { font-size: 2rem; padding: 20px; background: #333; color: white; border: none; border-radius: 10px; }
+    .btn:active { background: #111; }
+    #message { font-size: 1.3rem; margin-top: 1rem; min-height: 2rem; }
+  </style>
+</head>
+<body>
+  <h1>Anwesenheits-Check-in</h1>
+  <div id="codeDisplay">__________</div>
+  <div class="keypad" id="keypad"></div>
+  <div id="message"></div>
+
+  <script>
+    const validCodes = {
+      "1234567890": "Maxim Getz",
+      "0987654321": "Lena Scholz",
+      "1111222233": "Tom Müller"
+      // Weitere Schüler:innen hinzufügen
+    };
+
+    let input = "";
+
+    function updateDisplay() {
+      document.getElementById("codeDisplay").textContent = input.padEnd(10, "_");
+    }
+
+    function handleKey(num) {
+      if (input.length < 10) {
+        input += num;
+        updateDisplay();
+      }
+      if (input.length === 10) {
+        checkCode(input);
+      }
+    }
+
+    function checkCode(code) {
+      const name = validCodes[code];
+      const now = new Date();
+      if (name) {
+        const time = now.toLocaleTimeString("de-DE");
+        document.getElementById("message").textContent = `✅ Willkommen, ${name} – eingeloggt um ${time}`;
+        saveLogin(name, now.toISOString());
+
+        setTimeout(() => {
+          input = "";
+          updateDisplay();
+          document.getElementById("message").textContent = "";
+        }, 4000);
+      } else {
+        document.getElementById("message").textContent = "❌ Ungültiger Code";
+        setTimeout(() => {
+          input = "";
+          updateDisplay();
+          document.getElementById("message").textContent = "";
+        }, 2000);
+      }
+    }
+
+    function saveLogin(name, isoTime) {
+      const dateKey = isoTime.split("T")[0]; // z.B. 2025-05-18
+      const logs = JSON.parse(localStorage.getItem("loginsByDay") || "{}");
+      const time = new Date(isoTime).toLocaleTimeString("de-DE");
+
+      if (!logs[dateKey]) logs[dateKey] = [];
+      logs[dateKey].push({ name, time });
+
+      localStorage.setItem("loginsByDay", JSON.stringify(logs));
+    }
+
+    function createKeypad() {
+      const keypad = document.getElementById("keypad");
+      for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = "btn";
+        btn.onclick = () => handleKey(i.toString());
+        keypad.appendChild(btn);
+      }
+      const zero = document.createElement("button");
+      zero.textContent = "0";
+      zero.className = "btn";
+      zero.onclick = () => handleKey("0");
+
+      keypad.appendChild(document.createElement("div"));
+      keypad.appendChild(zero);
+      keypad.appendChild(document.createElement("div"));
+    }
+
+    createKeypad();
+    updateDisplay();
+  </script>
+</body>
+</html>
