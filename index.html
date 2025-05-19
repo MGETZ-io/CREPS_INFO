@@ -1,267 +1,332 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vertretungsplan Info-Display</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureOS 0.05 Beta</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            color: #2c3e50;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
-            height: 100vh;
-        }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
 
-        #status-bar {
-            background-color: #2980b9;
-            color: white;
-            width: 100%;
-            padding: 15px;
-            text-align: center;
-            font-size: 24px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1000;
-            display: block;
-            overflow-x: hidden;
-            white-space: nowrap;
-            font-weight: bold;
-            line-height: 1.5;
-        }
+    #bootScreen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      z-index: 999;
+    }
 
-        #status-bar-content {
-            display: inline-block;
-            animation: rotateStatusBar 20s linear infinite;
-        }
+    #mainApp {
+      display: none;
+      padding: 2rem;
+      text-align: center;
+      background: #f0f0f0;
+      color: black;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
 
-        @keyframes rotateStatusBar {
-            0% {
-                transform: translateX(100%);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
-        }
+    #codeDisplay {
+      font-size: 2rem;
+      padding: 1rem;
+      margin: 1rem auto;
+      background: white;
+      border: 2px solid #333;
+      width: 300px;
+      letter-spacing: 0.3rem;
+    }
 
-        #clock {
-            font-size: 30px;
-            font-weight: bold;
-            color: pink; /* Uhr in Pink */
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-        }
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
 
-        #main-container {
-            display: flex;
-            height: 100%;
-            width: 100%;
-            justify-content: space-between;
-            margin-top: 70px;
-        }
+    .btn {
+      font-size: 2rem;
+      padding: 20px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
 
-        #anwesenheit-container {
-            width: 50%;
-            background-color: #ecf0f1;
-            padding: 20px;
-            overflow-y: auto; /* Korrektes Scrollen */
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
+    #hiddenInput {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
 
-        #vertretungsplan-container {
-            width: 50%;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100% - 20px);
-            background-color: #ecf0f1;
-        }
+    #overlay, #popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      z-index: 1000;
+    }
 
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+    #overlay {
+      background: rgba(0,0,0,0.5);
+    }
 
-        #anwesenheit {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            overflow-y: auto; /* Korrektes Scrollen */
-            height: 100%; /* Scrollen bis zum Ende */
-        }
+    #popup {
+      background: white;
+      color: black;
+      width: 320px;
+      margin: auto;
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
 
-        .anwesenheits-status {
-            margin: 10px 0;
-            font-size: 18px;
-        }
+    .checkmark {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 5px solid #34c759;
+      position: relative;
+      margin-bottom: 15px;
+    }
 
-        .anwesenheits-status span {
-            font-weight: bold;
-        }
+    .checkmark::after {
+      content: "";
+      position: absolute;
+      left: 20px;
+      top: 10px;
+      width: 20px;
+      height: 40px;
+      border-right: 5px solid #34c759;
+      border-bottom: 5px solid #34c759;
+      transform: rotate(45deg);
+      animation: checkmark 0.4s ease-out forwards;
+    }
 
-        #anwesenheit input {
-            padding: 10px;
-            width: 250px;
-            font-size: 16px;
-            margin-bottom: 15px;
-            border: 1px solid #2980b9;
-            background-color: transparent;
-            color: #2c3e50;
-            outline: none;
-        }
+    .error {
+      font-size: 1.3rem;
+      color: red;
+    }
 
-        #check-button {
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+    #infoIcon {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 1.2rem;
+      color: #555;
+      cursor: pointer;
+      background: rgba(255,255,255,0.8);
+      padding: 5px 10px;
+      border-radius: 20px;
+      user-select: none;
+    }
 
-        #check-button:hover {
-            background-color: #2980b9;
-        }
-
-        /* Meme des Tages entfernt */
-    </style>
+    #infoPopup {
+      position: fixed;
+      bottom: 50px;
+      right: 20px;
+      background: white;
+      color: black;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 1001;
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
 <body>
-    <div id="status-bar">
-        <div id="status-bar-content">
-            Anwesenheitsstatus und Vertretungsplan
-        </div>
-        <div id="clock"></div> <!-- Uhr im Statusbalken -->
-    </div>
 
-    <div id="main-container">
-        <!-- Bereich für Anwesenheit -->
-        <div id="anwesenheit-container">
-            <h2>Prüfung der Anwesenheit</h2>
-            <input type="text" id="nummer-input" placeholder="Gib deine 10-stellige Nummer ein" autocomplete="off">
-            <div id="anwesenheit">
-                <!-- Dynamisch eingefügte Anwesenheitsstatus -->
-            </div>
-        </div>
+  <div id="bootScreen">🔒 SecureOS Version 0.05 Beta wird geladen...</div>
 
-        <!-- Bereich für den Vertretungsplan -->
-        <div id="vertretungsplan-container">
-            <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
-        </div>
-    </div>
+  <div id="mainApp" onclick="document.getElementById('hiddenInput').focus()">
+    <h1>Anwesenheits-Check-in</h1>
+    <div id="codeDisplay">__________</div>
+    <input id="hiddenInput" inputmode="numeric" />
+    <div class="keypad" id="keypad"></div>
+    <div id="infoIcon" onclick="toggleInfoPopup()">ℹ️</div>
+    <div id="infoPopup">SecureOS 0.05 Beta<br>Ein minimalistisches Betriebssystem für Check-in-Systeme. Entwickelt von Hustensaft Systems™.</div>
+  </div>
 
-    <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
+  <div id="overlay"></div>
+  <div id="popup"></div>
 
-    <script>
-        const studentenDaten = {
-             "0002261402": { name: "Maxim Getz", status: "Abwesend" },  // Geändert zu 0002261402
-            "0002130282": { name: "Alyssa Summer Kalbau", status: "Abwesend" },
-            "0002246683": { name: "Etienne Schnack", status: "Abwesend" },
-            "0002171047": { name: "Lukas Brüggert", status: "Abwesend" },
-            "0002131777": { name: "Kevin Köhler", status: "Abwesend" },
-            "555666": { name: "Morice Classen", status: "Abwesend" },
-            "777888": { name: "Justin Kramer", status: "Abwesend" },
-            "6969696969": { name: "Jannik Evolt", status: "Abwesend" },
-            "120000": { name: "Paddy Kuhls", status: "Abwesend" },
-            "abcabc": { name: "Comrad Bruno", status: "Anwesend" },
-            "911911": { name: "Damian Garmatz", status: "Abwesend" }
-        };
+  <script>
+    const validCodes = {
+      "1234567890": "Maxim Getz",
+      "0987654321": "Lena Scholz",
+      "1111222233": "Tom Müller"
+    };
 
-        function playKlingelSound() {
-            const klingelAudio = document.getElementById("klingel-audio");
-            klingelAudio.volume = 1.0; 
-            klingelAudio.play();
+    let input = "";
+    let pendingLogin = null;
+
+    function updateDisplay() {
+      document.getElementById("codeDisplay").textContent = input.padEnd(10, "_");
+    }
+
+    function handleKey(num) {
+      if (input.length < 10) {
+        input += num;
+        updateDisplay();
+      }
+      if (input.length === 10) {
+        checkCode(input);
+      }
+    }
+
+    function checkCode(code) {
+      const name = validCodes[code];
+      if (name) {
+        pendingLogin = { name, code, time: new Date() };
+        showConfirmPopup(name);
+      } else {
+        showErrorPopup("❌ Ungültiger Code");
+      }
+    }
+
+    function showConfirmPopup(name) {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      popup.innerHTML = `
+        <div class="checkmark"></div>
+        <p>✅ Bitte bestätigen, <strong>${name}</strong></p>
+        <button id="confirmBtn" style="font-size:1.5rem; padding: 0.5rem 2rem; border:none; border-radius:10px; background:#34c759; color:white; cursor:pointer;">
+          Bestätigen
+        </button>
+        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #555;">Doppelt klicken wie bei Apple Pay</p>
+      `;
+      popup.style.display = "block";
+      overlay.style.display = "block";
+
+      let confirmCount = 0;
+      const btn = document.getElementById("confirmBtn");
+      btn.onclick = () => {
+        confirmCount++;
+        if (confirmCount === 2) {
+          const { name, time } = pendingLogin;
+          saveLogin(name, time.toISOString());
+          showSuccessPopup(name, time.toLocaleTimeString("de-DE"));
+          pendingLogin = null;
+        } else {
+          btn.textContent = "Noch einmal bestätigen";
+          btn.style.background = "#28a745";
         }
+      };
+    }
 
-        function updateStatusBar() {
-            const statusBarContent = document.getElementById("status-bar-content");
-            let statusText = '';
-            for (let nummer in studentenDaten) {
-                const student = studentenDaten[nummer];
-                statusText += `${student.name}: ${student.status} | `;
-            }
-            statusBarContent.innerText = statusText.trim();
-        }
+    function showSuccessPopup(name, time) {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      popup.innerHTML = `
+        <div class="checkmark"></div>
+        ✅ Willkommen, <strong>${name}</strong><br>
+        Eingeloggt um <strong>${time}</strong>
+      `;
+      popup.style.display = "block";
+      overlay.style.display = "block";
+      setTimeout(() => {
+        popup.style.display = "none";
+        overlay.style.display = "none";
+        input = "";
+        updateDisplay();
+      }, 4000);
+    }
 
-        function checkAnwesenheit() {
-            const nummer = document.getElementById("nummer-input").value;
-            if (nummer.length === 10) {  // Überprüft nun auf 10 Zeichen
-                if (studentenDaten[nummer]) {
-                    studentenDaten[nummer].status = "Anwesend";
-                    updateStatusBar();
-                    updateAnwesenheitsListe();
-                    playKlingelSound(); 
+    function showErrorPopup(msg) {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      popup.innerHTML = `<div class="error">${msg}</div>`;
+      popup.style.display = "block";
+      overlay.style.display = "block";
+      setTimeout(() => {
+        popup.style.display = "none";
+        overlay.style.display = "none";
+        input = "";
+        updateDisplay();
+      }, 2500);
+    }
 
-                    document.getElementById("nummer-input").value = '';
-                    document.getElementById("nummer-input").focus();
-                } else {
-                    document.getElementById("nummer-input").value = ''; 
-                    document.getElementById("nummer-input").focus(); 
-                }
-            }
-        }
+    function saveLogin(name, isoTime) {
+      const dateKey = isoTime.split("T")[0];
+      const logs = JSON.parse(localStorage.getItem("loginsByDay") || "{}");
+      const time = new Date(isoTime).toLocaleTimeString("de-DE");
+      if (!logs[dateKey]) logs[dateKey] = [];
+      logs[dateKey].push({ name, time });
+      localStorage.setItem("loginsByDay", JSON.stringify(logs));
+    }
 
-        function updateAnwesenheitsListe() {
-            const anwesenheitContainer = document.getElementById("anwesenheit");
-            anwesenheitContainer.innerHTML = '';
-            for (let nummer in studentenDaten) {
-                const student = studentenDaten[nummer];
-                const statusDiv = document.createElement("div");
-                statusDiv.classList.add("anwesenheits-status");
+    function createKeypad() {
+      const keypad = document.getElementById("keypad");
+      for (let i = 1; i <= 9; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = "btn";
+        btn.onclick = () => handleKey(i.toString());
+        keypad.appendChild(btn);
+      }
+      const zero = document.createElement("button");
+      zero.textContent = "0";
+      zero.className = "btn";
+      zero.onclick = () => handleKey("0");
+      keypad.appendChild(document.createElement("div"));
+      keypad.appendChild(zero);
+      keypad.appendChild(document.createElement("div"));
+    }
 
-                statusDiv.style.color = student.status === "Anwesend" ? "green" : "red";
-                statusDiv.innerHTML = `<span>${student.name}:</span> ${student.status}`;
-                anwesenheitContainer.appendChild(statusDiv);
-            }
+    document.addEventListener("keydown", (e) => {
+      if (e.key >= "0" && e.key <= "9") handleKey(e.key);
+      if (e.key === "Backspace") {
+        input = input.slice(0, -1);
+        updateDisplay();
+      }
+    });
 
-            // Scrollen zum letzten Eintrag
-            anwesenheitContainer.scrollTop = anwesenheitContainer.scrollHeight;
-        }
+    function toggleInfoPopup() {
+      const infoPopup = document.getElementById("infoPopup");
+      infoPopup.style.display = infoPopup.style.display === "block" ? "none" : "block";
+    }
 
-        function setDailyReload() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            if (hours === 23 && minutes === 59 && seconds === 0) {
-                location.reload(); // Seite um 23:59 neuladen
-            }
-        }
+    function goFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    }
 
-        function updateClock() {
-            const clockElement = document.getElementById("clock");
-            const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            clockElement.innerText = `${hours}:${minutes}:${seconds}`;
-        }
-
-        document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
-
-        window.onload = function () {
-            document.getElementById("nummer-input").focus();
-            updateAnwesenheitsListe();
-            setInterval(updateAnwesenheitsListe, 300000);
-            setInterval(updateClock, 1000);
-            setInterval(setDailyReload, 1000); // Tägliches Neuladen um 23:59
-        };
-    </script>
+    window.onload = () => {
+      createKeypad();
+      updateDisplay();
+      setTimeout(() => {
+        document.getElementById("bootScreen").style.display = "none";
+        document.getElementById("mainApp").style.display = "block";
+        goFullscreen();
+        document.getElementById("hiddenInput").focus();
+      }, 3000);
+    };
+  </script>
 </body>
 </html>
