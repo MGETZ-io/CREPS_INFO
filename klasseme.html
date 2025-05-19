@@ -3,14 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Anwesenheit - Klasse</title>
+  <title>SecureOS 0.05 Beta</title>
   <style>
-    body {
-      font-family: sans-serif;
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    #bootScreen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      z-index: 999;
+    }
+
+    #mainApp {
+      display: none;
+      padding: 2rem;
       text-align: center;
       background: #f0f0f0;
-      margin: 0;
-      padding: 2rem;
+      color: black;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
     }
 
     #codeDisplay {
@@ -39,11 +66,6 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
-      user-select: none;
-    }
-
-    .btn:active {
-      background: #111;
     }
 
     #hiddenInput {
@@ -52,30 +74,28 @@
       pointer-events: none;
     }
 
-    /* Popup & Apple Pay Style */
-    #overlay {
+    #overlay, #popup {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
       display: none;
-      z-index: 99;
+      z-index: 1000;
+    }
+
+    #overlay {
+      background: rgba(0,0,0,0.5);
     }
 
     #popup {
-      position: fixed;
+      background: white;
+      color: black;
+      width: 320px;
+      margin: auto;
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: white;
-      padding: 2rem;
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(0,0,0,0.4);
-      z-index: 100;
-      display: none;
-      font-size: 1.5rem;
-      text-align: center;
-      max-width: 320px;
-      word-wrap: break-word;
     }
 
     .checkmark {
@@ -101,28 +121,51 @@
       animation: checkmark 0.4s ease-out forwards;
     }
 
-    @keyframes checkmark {
-      from {
-        opacity: 0;
-        transform: scale(0.5) rotate(45deg);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) rotate(45deg);
-      }
-    }
-
     .error {
       font-size: 1.3rem;
       color: red;
     }
+
+    #infoIcon {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      font-size: 1.2rem;
+      color: #555;
+      cursor: pointer;
+      background: rgba(255,255,255,0.8);
+      padding: 5px 10px;
+      border-radius: 20px;
+      user-select: none;
+    }
+
+    #infoPopup {
+      position: fixed;
+      bottom: 50px;
+      right: 20px;
+      background: white;
+      color: black;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 1001;
+      font-size: 0.95rem;
+    }
   </style>
 </head>
-<body onclick="document.getElementById('hiddenInput').focus()">
-  <h1>Anwesenheits-Check-in</h1>
-  <div id="codeDisplay">__________</div>
-  <input id="hiddenInput" inputmode="numeric" />
-  <div class="keypad" id="keypad"></div>
+<body>
+
+  <div id="bootScreen">🔒 SecureOS Version 0.05 Beta wird geladen...</div>
+
+  <div id="mainApp" onclick="document.getElementById('hiddenInput').focus()">
+    <h1>Anwesenheits-Check-in</h1>
+    <div id="codeDisplay">__________</div>
+    <input id="hiddenInput" inputmode="numeric" />
+    <div class="keypad" id="keypad"></div>
+    <div id="infoIcon" onclick="toggleInfoPopup()">ℹ️</div>
+    <div id="infoPopup">SecureOS 0.05 Beta<br>Ein minimalistisches Betriebssystem für Check-in-Systeme. Entwickelt von Hustensaft Systems™.</div>
+  </div>
 
   <div id="overlay"></div>
   <div id="popup"></div>
@@ -132,11 +175,10 @@
       "1234567890": "Maxim Getz",
       "0987654321": "Lena Scholz",
       "1111222233": "Tom Müller"
-      // Weitere Codes hier hinzufügen
     };
 
     let input = "";
-    let pendingLogin = null; // Zwischenspeicherung für doppeltes Bestätigen
+    let pendingLogin = null;
 
     function updateDisplay() {
       document.getElementById("codeDisplay").textContent = input.padEnd(10, "_");
@@ -155,7 +197,6 @@
     function checkCode(code) {
       const name = validCodes[code];
       if (name) {
-        // Popup mit doppeltem Bestätigen anzeigen
         pendingLogin = { name, code, time: new Date() };
         showConfirmPopup(name);
       } else {
@@ -188,7 +229,7 @@
           pendingLogin = null;
         } else {
           btn.textContent = "Noch einmal bestätigen";
-          btn.style.background = "#28a745"; // dunkleres Grün
+          btn.style.background = "#28a745";
         }
       };
     }
@@ -203,7 +244,6 @@
       `;
       popup.style.display = "block";
       overlay.style.display = "block";
-
       setTimeout(() => {
         popup.style.display = "none";
         overlay.style.display = "none";
@@ -218,7 +258,6 @@
       popup.innerHTML = `<div class="error">${msg}</div>`;
       popup.style.display = "block";
       overlay.style.display = "block";
-
       setTimeout(() => {
         popup.style.display = "none";
         overlay.style.display = "none";
@@ -231,10 +270,8 @@
       const dateKey = isoTime.split("T")[0];
       const logs = JSON.parse(localStorage.getItem("loginsByDay") || "{}");
       const time = new Date(isoTime).toLocaleTimeString("de-DE");
-
       if (!logs[dateKey]) logs[dateKey] = [];
       logs[dateKey].push({ name, time });
-
       localStorage.setItem("loginsByDay", JSON.stringify(logs));
     }
 
@@ -251,25 +288,45 @@
       zero.textContent = "0";
       zero.className = "btn";
       zero.onclick = () => handleKey("0");
-
       keypad.appendChild(document.createElement("div"));
       keypad.appendChild(zero);
       keypad.appendChild(document.createElement("div"));
     }
 
     document.addEventListener("keydown", (e) => {
-      if (e.key >= "0" && e.key <= "9") {
-        handleKey(e.key);
-      }
+      if (e.key >= "0" && e.key <= "9") handleKey(e.key);
       if (e.key === "Backspace") {
         input = input.slice(0, -1);
         updateDisplay();
       }
     });
 
-    createKeypad();
-    updateDisplay();
-    document.getElementById("hiddenInput").focus();
+    function toggleInfoPopup() {
+      const infoPopup = document.getElementById("infoPopup");
+      infoPopup.style.display = infoPopup.style.display === "block" ? "none" : "block";
+    }
+
+    function goFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    }
+
+    window.onload = () => {
+      createKeypad();
+      updateDisplay();
+      setTimeout(() => {
+        document.getElementById("bootScreen").style.display = "none";
+        document.getElementById("mainApp").style.display = "block";
+        goFullscreen();
+        document.getElementById("hiddenInput").focus();
+      }, 3000);
+    };
   </script>
 </body>
 </html>
