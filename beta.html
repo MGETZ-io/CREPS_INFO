@@ -177,14 +177,15 @@
             <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
         </div>
 
-        <div id="clock"></div> <!-- Uhr unter der Liste -->
+        <!-- Uhr unter der Anwesenheitsliste -->
+        <div id="clock"></div>
     </div>
 
     <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
 
     <script>
         const studentenDaten = {
-             "0003829015": { name: "Maxim Getz", status: "Abwesend" },  
+            "0003829015": { name: "Maxim Getz", status: "Abwesend" },
             "0002130282": { name: "Alyssa Summer Kalbau", status: "Abwesend" },
             "0003890079": { name: "Etienne Schnack", status: "Abwesend" },
             "0002171047": { name: "Lukas Brüggert", status: "Abwesend" },
@@ -246,17 +247,21 @@
             }
         }
 
+        // Event-Listener für automatische Prüfung
+        document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
+
+        // Uhr aktualisieren
         function updateClock() {
-            const clock = document.getElementById("clock");
+            const clockElement = document.getElementById("clock");
             const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const seconds = now.getSeconds().toString().padStart(2, '0');
-            clock.innerText = `${hours}:${minutes}:${seconds}`;
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            clockElement.innerText = `${hours}:${minutes}:${seconds}`;
         }
 
         setInterval(updateClock, 1000);
-        updateClock(); // Initial call to set the clock immediately
+        updateClock();  // sofortige initiale Anzeige der Uhr
     </script>
 </body>
 </html>
