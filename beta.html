@@ -1,1 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vertretungsplan Info-Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #2c3e50; /* Dunkles Hintergrundfarbe */
+            color: #ecf0f1; /* Helle Schriftfarbe */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #status-bar {
+            background-color: #2980b9;
+            color: white;
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            line-height: 1.5;
+            overflow-x: hidden;
+            white-space: nowrap;
+            backdrop-filter: blur(10px);
+        }
+
+        #status-bar-content {
+            display: inline-block;
+            animation: rotateStatusBar 20s linear infinite;
+        }
+
+        @keyframes rotateStatusBar {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        #clock {
+            font-size: 30px;
+            font-weight: bold;
+            color: pink; /* Uhr in Pink */
+            position: fixed;
+            bottom: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        #main-container {
+            display: flex;
+            height: calc(100% - 70px); /* Höhenanpassung nach Statusbar */
+            width: 100%;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: #8e44ad; /* Dunkellila Hintergrund */
+        }
+
+        #anwesenheit-container {
+            width: 50%;
+            background-color: #34495e; /* Dunklerer Bereich */
+            padding: 20px;
+            overflow-y: auto; 
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        #vertretungsplan-container {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100% - 20px);
+            background-color: #34495e; /* Dunklerer Bereich */
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #anwesenheit {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .anwesenheits-status {
+            margin: 10px 0;
+            font-size: 18px;
+            transition: all 0.5s ease;
+        }
+
+        .anwesenheits-status span {
+            font-weight: bold;
+        }
+
+        #anwesenheit input {
+            padding: 10px;
+            width: 250px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #3498db;
+            background-color: transparent;
+            color: #ecf0f1;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #anwesenheit input:focus {
+            border-color: #1abc9c;
+        }
+
+        #check-button {
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        #check-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div id="status-bar">
+        <div id="status-bar-content">
+            Anwesenheitsstatus und Vertretungsplan
+        </div>
+    </div>
+
+    <div id="main-container">
+        <!-- Bereich für Anwesenheit -->
+        <div id="anwesenheit-container">
+            <h2>Prüfung der Anwesenheit</h2>
+            <input type="text" id="nummer-input" placeholder="Gib deine 10-stellige Nummer ein" autocomplete="off">
+            <div id="anwesenheit">
+                <!-- Dynamisch eingefügte Anwesenheitsstatus -->
+            </div>
+        </div>
+
+        <!-- Bereich für den Vertretungsplan -->
+        <div id="vertretungsplan-container">
+            <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
+        </div>
+    </div>
+
+    <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
+
+    <div id="clock"></div> <!-- Uhr unten mittig -->
+
+    <script>
+        const studentenDaten = {
+            "0003829015": { name: "Maxim Getz", status: "Abwesend" },
+            "0002130282": { name: "Alyssa Summer Kalbau", status: "Abwesend" },
+            "0003890079": { name: "Etienne Schnack", status: "Abwesend" },
+            "0002171047": { name: "Lukas Brüggert", status: "Abwesend" },
+            "0002131777": { name: "Kevin Köhler", status: "Abwesend" },
+            "0003892391": { name: "Morice Classen", status: "Abwesend" },
+            "0003890503": { name: "Justin Kramer", status: "Abwesend" },
+            "6969696969": { name: "Jannik Evolt", status: "Abwesend" },
+            "0003884413": { name: "Paddy Kuhls", status: "Abwesend" },
+            "abcabc": { name: "Comrad Bruno", status: "Anwesend" },
+            "0003869444": { name: "Lars ERöschi", status: "Ist eh nd da" },
+            "0003876103": { name: "Damian Garmatz", status: "Abwesend" }
+        };
+
+        function playKlingelSound() {
+            const klingelAudio = document.getElementById("klingel-audio");
+            klingelAudio.volume = 1.0;
+            klingelAudio.play();
+        }
+
+        function updateStatusBar() {
+            const statusBarContent = document.getElementById("status-bar-content");
+            let statusText = '';
+            for (let nummer in studentenDaten) {
+                const student = studentenDaten[nummer];
+                statusText += `${student.name}: ${student.status} | `;
+            }
+            statusBarContent.innerText = statusText.trim();
+        }
+
+        function checkAnwesenheit() {
+            const nummer = document.getElementById("nummer-input").value;
+            if (nummer.length === 10) {  // Überprüft nun auf 10 Zeichen
+                if (studentenDaten[nummer]) {
+                    studentenDaten[nummer].status = "Anwesend";
+                    updateStatusBar();
+                    updateAnwesenheitsListe();
+                    playKlingelSound();
+                    document.getElementById("nummer-input").value = '';
+                    document.getElementById("nummer-input").focus();
+                } else {
+                    document.getElementById("nummer-input").value = ''; 
+                    document.getElementById("nummer-input").focus(); 
+                }
+            }
+        }
+
+        function updateAnwesenheitsListe() {
+            const anwesenheitContainer = document.getElementById("anwesenheit");
+            anwesenheitContainer.innerHTML = '';
+            for (let nummer in studentenDaten) {
+                const student = studentenDaten[nummer];
+                const statusDiv = document.createElement("div");
+                statusDiv.classList.add("anwesenheits-status");
+
+                statusDiv.style.color = student.status === "Anwesend" ? "green" : "red";
+                statusDiv.innerHTML = `<span>${student.name}:</span> ${student.status}`;
+                anwesenheitContainer.appendChild(statusDiv);
+            }
+            anwesenheitContainer.scrollTop = anwesenheitContainer.scrollHeight; // Scrollt zum letzten Eintrag
+        }
+
+        function setDailyReload() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            if (hours === 23 && minutes === 59 && seconds === 0) {
+                location.reload(); // Seite um 23:59 neuladen
+            }
+        }
+
+        function updateClock() {
+            const clockElement = document.getElementById("clock");
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            clockElement.innerText = `${hours}:${minutes}:${seconds}`;
+        }
+
+        document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
+
+        window.onload = function () {
+            document.getElementById("nummer-input").focus();
+            updateAnwesenheitsListe();
+            setInterval(updateAnwesenheitsListe, 300000); // alle 5 Minuten
+            setInterval(updateClock, 1000); // Uhr jede Sekunde aktualisieren
+            setInterval(setDailyReload, 1000); // Tägliches Neuladen um 23:59
+        };
+    </script>
+</body>
+</html>
