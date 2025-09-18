@@ -13,17 +13,17 @@
 
         body {
             font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            color: #2c3e50;
+            background-color: #121212;
+            color: #ecf0f1;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
             height: 100vh;
         }
 
         #status-bar {
-            background-color: #2980b9;
+            background-color: rgba(41, 128, 185, 0.7);
             color: white;
             width: 100%;
             padding: 15px;
@@ -38,6 +38,8 @@
             white-space: nowrap;
             font-weight: bold;
             line-height: 1.5;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         #status-bar-content {
@@ -54,56 +56,53 @@
             }
         }
 
-        #clock {
-            font-size: 30px;
-            font-weight: bold;
-            color: pink; /* Uhr in Pink */
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-        }
-
         #main-container {
             display: flex;
-            height: 100%;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
             width: 100%;
-            justify-content: space-between;
-            margin-top: 70px;
+            margin-top: 80px;
+            padding: 20px;
         }
 
         #anwesenheit-container {
-            width: 50%;
-            background-color: #ecf0f1;
+            width: 80%;
+            background-color: rgba(236, 240, 241, 0.1);
             padding: 20px;
-            overflow-y: auto; /* Korrektes Scrollen */
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            max-height: 400px;
         }
 
         #vertretungsplan-container {
-            width: 50%;
+            width: 80%;
             padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: calc(100% - 20px);
-            background-color: #ecf0f1;
+            background-color: rgba(236, 240, 241, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
         }
 
         iframe {
             width: 100%;
             height: 100%;
-            border: none;
+            border-radius: 10px;
         }
 
         #anwesenheit {
             display: flex;
             flex-direction: column;
             align-items: flex-start;
-            overflow-y: auto; /* Korrektes Scrollen */
-            height: 100%; /* Scrollen bis zum Ende */
+            overflow-y: auto;
+            height: 100%;
         }
 
         .anwesenheits-status {
@@ -120,10 +119,12 @@
             width: 250px;
             font-size: 16px;
             margin-bottom: 15px;
-            border: 1px solid #2980b9;
+            border: 1px solid #3498db;
             background-color: transparent;
-            color: #2c3e50;
+            color: #ecf0f1;
             outline: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         #check-button {
@@ -133,13 +134,25 @@
             border: none;
             cursor: pointer;
             margin-top: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         #check-button:hover {
             background-color: #2980b9;
         }
 
-        /* Meme des Tages entfernt */
+        #clock {
+            font-size: 30px;
+            font-weight: bold;
+            color: pink;
+            margin-top: 20px;
+        }
+
+        #anwesenheit-container input:focus {
+            border-color: #3498db;
+        }
+
     </style>
 </head>
 <body>
@@ -147,7 +160,6 @@
         <div id="status-bar-content">
             Anwesenheitsstatus und Vertretungsplan
         </div>
-        <div id="clock"></div> <!-- Uhr im Statusbalken -->
     </div>
 
     <div id="main-container">
@@ -164,13 +176,15 @@
         <div id="vertretungsplan-container">
             <iframe src="https://borys.webuntis.com/WebUntis/monitor?school=Freiherr-vom-Stein%20Neum%C3%BCnster&monitorType=subst&format=Vertretungen-Klassen" id="vertretungsplan"></iframe>
         </div>
+
+        <div id="clock"></div> <!-- Uhr unter der Liste -->
     </div>
 
     <audio id="klingel-audio" src="klingel.mp3" preload="auto"></audio>
 
     <script>
         const studentenDaten = {
-             "0003829015": { name: "Maxim Getz", status: "Abwesend" },  // Geändert zu 0002261402
+             "0003829015": { name: "Maxim Getz", status: "Abwesend" },  
             "0002130282": { name: "Alyssa Summer Kalbau", status: "Abwesend" },
             "0003890079": { name: "Etienne Schnack", status: "Abwesend" },
             "0002171047": { name: "Lukas Brüggert", status: "Abwesend" },
@@ -227,42 +241,22 @@
                 statusDiv.classList.add("anwesenheits-status");
 
                 statusDiv.style.color = student.status === "Anwesend" ? "green" : "red";
-                statusDiv.innerHTML = `<span>${student.name}:</span> ${student.status}`;
+                statusDiv.innerHTML = `${student.name}: <span>${student.status}</span>`;
                 anwesenheitContainer.appendChild(statusDiv);
-            }
-
-            // Scrollen zum letzten Eintrag
-            anwesenheitContainer.scrollTop = anwesenheitContainer.scrollHeight;
-        }
-
-        function setDailyReload() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            if (hours === 23 && minutes === 59 && seconds === 0) {
-                location.reload(); // Seite um 23:59 neuladen
             }
         }
 
         function updateClock() {
-            const clockElement = document.getElementById("clock");
+            const clock = document.getElementById("clock");
             const now = new Date();
             const hours = now.getHours().toString().padStart(2, '0');
             const minutes = now.getMinutes().toString().padStart(2, '0');
             const seconds = now.getSeconds().toString().padStart(2, '0');
-            clockElement.innerText = `${hours}:${minutes}`;
+            clock.innerText = `${hours}:${minutes}:${seconds}`;
         }
 
-        document.getElementById("nummer-input").addEventListener("input", checkAnwesenheit);
-
-        window.onload = function () {
-            document.getElementById("nummer-input").focus();
-            updateAnwesenheitsListe();
-            setInterval(updateAnwesenheitsListe, 300000);
-            setInterval(updateClock, 1000);
-            setInterval(setDailyReload, 1000); // Tägliches Neuladen um 23:59
-        };
+        setInterval(updateClock, 1000);
+        updateClock(); // Initial call to set the clock immediately
     </script>
 </body>
 </html>
